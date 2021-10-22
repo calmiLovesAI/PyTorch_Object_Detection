@@ -1,6 +1,7 @@
 import torch
 
 from utils import iou_2
+from YOLOv3.inference import predict_bounding_bbox
 
 
 def make_label(cfg, true_boxes):
@@ -18,7 +19,7 @@ def make_label(cfg, true_boxes):
     num_classes = cfg["Model"]["num_classes"]
     batch_size = true_boxes.size()[0]
 
-    center_xy = torch.div(true_boxes[..., 0:2] + true_boxes[..., 2:4], 2)  # shape : [B, N, 2]
+    center_xy = torch.div(true_boxes[..., 0:2] + true_boxes[..., 2:4], 2, rounding_mode="floor")  # shape : [B, N, 2]
     box_wh = true_boxes[..., 2:4] - true_boxes[..., 0:2]  # shape : [B, N, 2]
     true_labels = [torch.zeros(batch_size, features_size[i], features_size[i], 3, num_classes + 5) for i in range(3)]
     valid_mask = box_wh[..., 0] > 0
@@ -43,4 +44,31 @@ def make_label(cfg, true_boxes):
 
     return true_labels
 
+
+class YoloLoss:
+    def __init__(self, cfg, device):
+        self.cfg = cfg
+        self.device = device
+        self.anchors = cfg["Train"]["anchor"]
+        self.anchors = torch.tensor(self.anchors, dtype=torch.float32)
+        self.anchors = torch.reshape(self.anchors, shape=(-1, 2))
+        self.scale_tensor = torch.tensor(cfg["Model"]["output_features"], dtype=torch.float32)
+        self.grid_shape = torch.cat((self.scale_tensor, self.scale_tensor), dim=-1)
+
+    def __call__(self, pred, target):
+        total_loss = 0
+        B = pred[0].size()[0]
+
+        for i in range(3):
+            true_object_mask = target[..., 4:5]
+            true_object_mask_bool = true_object_mask.bool()
+            true_class_probs = target[i][..., 5:]
+
+            pred_xy, pred_wh, grid, pred_features = predict_bounding_bbox(cfg=self.cfg,
+                                                                          feature_map=pred[i],
+                                                                          anchors=self.anchors,
+                                                                          idx=i,
+                                                                          device=self.device,
+                                                                          is_training=True)
+            pred_box = torch.cat((pred_xy, pred_wh), dim=-1)
 

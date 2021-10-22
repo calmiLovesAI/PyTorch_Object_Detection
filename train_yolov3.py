@@ -2,6 +2,7 @@ import yaml
 import torch
 
 from YOLOv3.dataloader import build_train_loader
+from YOLOv3.loss import make_label
 
 
 if __name__ == '__main__':
@@ -12,5 +13,8 @@ if __name__ == '__main__':
     for i, (img, tar) in enumerate(train_loader):
         print("i = ", i)
         print("img size: {}, tar size: {}".format(img.size(), tar.size()))
-        print(tar)
+        labels = make_label(cfg, tar)
+        for _ in labels:
+            print(_.size())
+            print(_.type())
         break

@@ -53,12 +53,13 @@ class YoloLoss:
         self.anchors = cfg["Train"]["anchor"]
         self.anchors = torch.tensor(self.anchors, dtype=torch.float32, device=device)
         self.anchors = torch.reshape(self.anchors, shape=(-1, 2))
-        self.scale_tensor = torch.tensor(cfg["Model"]["output_features"], dtype=torch.float32)
-        self.grid_shape = torch.cat((self.scale_tensor, self.scale_tensor), dim=-1)
+        self.scale_tensor = torch.tensor(cfg["Model"]["output_features"], dtype=torch.float32, device=self.device)
+        self.grid_shape = torch.stack((self.scale_tensor, self.scale_tensor), dim=-1)
         self.ignore_threshold = cfg["Loss"]["ignore_threshold"]
 
     def _get_scale_size(self, i):
-        ori_size = torch.tensor([self.cfg["Train"]["input_size"], self.cfg["Train"]["input_size"]], dtype=torch.float32, device=self.device)
+        ori_size = torch.tensor([self.cfg["Train"]["input_size"], self.cfg["Train"]["input_size"]], dtype=torch.float32,
+                                device=self.device)
         anchor_size = self.anchors[i * 3:(i + 1) * 3, :]
         return torch.div(ori_size, anchor_size)
 
@@ -110,7 +111,7 @@ class YoloLoss:
             conf_loss = true_object_mask * F.binary_cross_entropy_with_logits(input=pred_features[..., 4:5],
                                                                               target=true_object_mask,
                                                                               reduction="none") + (
-                                    1 - true_object_mask) * F.binary_cross_entropy_with_logits(
+                                1 - true_object_mask) * F.binary_cross_entropy_with_logits(
                 input=pred_features[..., 4:5],
                 target=true_object_mask,
                 reduction="none") * ignore_mask

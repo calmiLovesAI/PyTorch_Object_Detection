@@ -24,7 +24,6 @@ if __name__ == '__main__':
     # 模型
     model = YoloV3(cfg["Model"]["num_classes"])
     model.to(device=device)
-    model.train()
 
     # loss
     criterion = YoloLoss(cfg, device)
@@ -38,6 +37,7 @@ if __name__ == '__main__':
     prob_loss_mean = MeanMetric()
 
     for epoch in range(cfg["Train"]["epochs"]):
+        model.train()
         for i, (img, tar) in enumerate(train_loader):
             start_time = time.time()
 
@@ -75,5 +75,6 @@ if __name__ == '__main__':
         if epoch % cfg["Train"]["save_frequency"] == 0:
             save_path = cfg["Train"]["save_path"] + "YOLOv3_epoch_{}.pth".format(epoch)
             torch.save(model.state_dict(), save_path)
-    
+
+    torch.save(model.state_dict(), cfg["Train"]["save_path"] + "YOLOv3.pth")
 

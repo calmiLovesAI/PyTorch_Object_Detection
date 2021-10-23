@@ -4,3 +4,5 @@ __pycache__
 !/data/README.md
 /saved_model/*
 !/saved_model/README.md
+/detect/*
+!/detect/README.md

@@ -5,6 +5,9 @@ Train:
   input_size: 416
   save_path: "./saved_model/"
   save_frequency: 5
+  test_during_training: True
+  test_pictures:
+    - "./detect/1.jpg"
   # "voc" or "coco"
   dataset_name: "voc"
   max_num_boxes: 20
@@ -15,6 +18,9 @@ Model:
   output_features: [13, 26, 52]
 Loss:
   ignore_threshold: 0.5
+Nms:
+  conf_threshold: 0.6
+  iou_threshold: 0.5
 VOC:
   root: "./data/VOCdevkit/VOC2012/"
   num_classes: 20

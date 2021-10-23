@@ -1,4 +1,12 @@
 import torch
+import cv2
+import os
+import numpy as np
+
+from YOLOv3.nms import apply_nms
+from draw import draw_boxes_on_image
+from utils import ResizeWithPad, letter_box
+from torchvision.transforms.functional import to_tensor
 
 
 def generate_grid_index(length, device):
@@ -26,7 +34,7 @@ def predict_bounding_bbox(cfg, feature_map, anchors, idx, device, is_training=Fa
 
     center_coord = center_index + torch.sigmoid(tx_ty)
     box_xy = center_coord / H
-    anchors = anchors[idx * 3:(idx+1) * 3, :]
+    anchors = anchors[idx * 3:(idx + 1) * 3, :]
     anchors /= cfg["Train"]["input_size"]
     anchors = torch.tile(anchors, dims=[area, 1])
     bw_bh = anchors * torch.exp(tw_th)
@@ -43,3 +51,69 @@ def predict_bounding_bbox(cfg, feature_map, anchors, idx, device, is_training=Fa
     else:
         return box_xy, box_wh, confidence, class_prob
 
+
+class Inference:
+    def __init__(self, cfg, outputs, input_image_shape, device):
+        self.cfg = cfg
+        self.device = device
+        self.outputs = outputs
+        self.input_image_h = input_image_shape[0]
+        self.input_image_w = input_image_shape[1]
+
+        self.anchors = cfg["Train"]["anchor"]
+        self.anchors = torch.tensor(self.anchors, dtype=torch.float32)
+        self.anchors = torch.reshape(self.anchors, shape=(-1, 2))
+
+    def _yolo_post_process(self, feature, scale_type):
+        box_xy, box_wh, confidence, class_prob = predict_bounding_bbox(self.cfg, feature, self.anchors, scale_type,
+                                                                       self.device, is_training=False)
+        boxes = self._boxes_to_original_image(box_xy, box_wh)
+        boxes = torch.reshape(boxes, shape=(-1, 4))
+        boxes_scores = confidence * class_prob
+        boxes_scores = torch.reshape(boxes_scores, shape=(-1, self.cfg["Model"]["num_classes"]))
+        return boxes, boxes_scores
+
+    def _boxes_to_original_image(self, box_xy, box_wh):
+        x = box_xy[..., 0:1]
+        y = box_xy[..., 1:2]
+        w = box_wh[..., 0:1]
+        h = box_wh[..., 1:2]
+        x, y, w, h = ResizeWithPad(cfg=self.cfg, h=self.input_image_h, w=self.input_image_w).resized_to_raw(x, y, w, h)
+        xmin = x - w / 2
+        ymin = y - h / 2
+        xmax = x + w / 2
+        ymax = y + h / 2
+        boxes = torch.cat((xmin, ymin, xmax, ymax), dim=-1)
+        return boxes
+
+    def get_results(self):
+        boxes_list = list()
+        boxes_scores_list = list()
+        for i in range(3):
+            boxes, boxes_scores = self._yolo_post_process(feature=self.outputs[i],
+                                                          scale_type=i)
+            boxes_list.append(boxes)
+            boxes_scores_list.append(boxes_scores)
+        boxes = torch.cat(boxes_list, dim=0)
+        scores = torch.cat(boxes_scores_list, dim=0)
+        return apply_nms(self.cfg, boxes, scores, self.device)
+
+
+def test_pipeline(cfg, model, image_path, device):
+    image = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    h, w, c = image.shape
+    image, _, _ = letter_box(image, (cfg["Train"]["input_size"], cfg["Train"]["input_size"]))
+    image = to_tensor(image)
+    image = torch.unsqueeze(image, dim=0)
+    outputs = model(image)
+    boxes, scores, classes = Inference(cfg=cfg, outputs=outputs, input_image_shape=(h, w), device=device).get_results()
+    boxes = boxes.detach().numpy()
+    scores = scores.detach().numpy()
+    classes = classes.detach().numpy()
+
+    image_with_boxes = draw_boxes_on_image(cfg, image_path, boxes, scores, classes)
+
+    # 保存检测结果
+    save_dir = "./detect/detected_" + os.path.basename(image_path).split(".")[0] + ".jpg"
+    cv2.imwrite(save_dir, image_with_boxes)

@@ -1,3 +1,5 @@
+import os
+
 import torch
 import yaml
 import time
@@ -5,12 +7,19 @@ import time
 from YOLOv3.check import check_cfg
 from YOLOv3.inference import test_pipeline
 from YOLOv3.model import YoloV3
+from datetime import datetime
 
 
-def detect(cfg, model, images, device):
+def get_time_format():
+    now = datetime.now()
+    return now.strftime("%Y-%m-%d_%H-%M-%S")
+
+
+def detect(cfg, model, images, device, info):
     for image in images:
         start_time = time.time()
-        test_pipeline(cfg, model, image, device)
+        save_dir = "./detect/{}_".format(info) + os.path.basename(image).split(".")[0] + ".jpg"
+        test_pipeline(cfg, model, image, device, save_dir=save_dir)
         print("检测图片{}用时：{:.4f}s".format(image, time.time() - start_time))
 
 
@@ -25,7 +34,7 @@ if __name__ == '__main__':
 
     model = YoloV3(cfg["Model"]["num_classes"])
     model.to(device=device)
-    # model.load_state_dict(torch.load(cfg["Train"]["save_path"] + "YOLOv3.pth"))
+    model.load_state_dict(torch.load(cfg["Train"]["save_path"] + "YOLOv3.pth"))
     model.eval()
 
-    detect(cfg, model, cfg["Train"]["test_pictures"], device)
+    detect(cfg, model, cfg["Train"]["test_pictures"], device, info=get_time_format())

@@ -7,6 +7,7 @@ from YOLOv3.dataloader import build_train_loader
 from YOLOv3.loss import make_label, YoloLoss
 from YOLOv3.model import YoloV3
 from utils import MeanMetric
+from test_yolov3 import detect
 
 if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -75,6 +76,10 @@ if __name__ == '__main__':
         if epoch % cfg["Train"]["save_frequency"] == 0:
             save_path = cfg["Train"]["save_path"] + "YOLOv3_epoch_{}.pth".format(epoch)
             torch.save(model.state_dict(), save_path)
+
+        if cfg["Train"]["test_during_training"]:
+            model.eval()
+            detect(cfg, model, cfg["Train"]["test_pictures"], device, info="epoch-{}".format(epoch))
 
     torch.save(model.state_dict(), cfg["Train"]["save_path"] + "YOLOv3.pth")
 

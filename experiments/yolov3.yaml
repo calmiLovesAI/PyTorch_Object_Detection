@@ -1,5 +1,5 @@
 Train:
-  epochs: 1
+  epochs: 100
   batch_size: 8
   learning_rate: 0.001
   input_size: 416
@@ -7,7 +7,7 @@ Train:
   save_frequency: 5
   test_during_training: True
   test_pictures:
-    - "./detect/1.jpg"
+    - ""
   # "voc" or "coco"
   dataset_name: "voc"
   max_num_boxes: 20

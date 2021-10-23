@@ -2,3 +2,5 @@
 __pycache__
 /data/*
 !/data/README.md
+/saved_model/*
+!/saved_model/README.md

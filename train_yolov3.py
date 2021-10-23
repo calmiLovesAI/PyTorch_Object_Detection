@@ -72,3 +72,8 @@ if __name__ == '__main__':
         conf_loss_mean.reset()
         prob_loss_mean.reset()
 
+        if epoch % cfg["Train"]["save_frequency"] == 0:
+            save_path = cfg["Train"]["save_path"] + "YOLOv3_epoch_{}.pth".format(epoch)
+            torch.save(model.state_dict(), save_path)
+    
+

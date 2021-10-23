@@ -64,6 +64,9 @@ class YoloLoss:
 
     def __call__(self, pred, target):
         total_loss = 0
+        loc_loss_sum = 0
+        conf_loss_sum = 0
+        prob_loss_sum = 0
         B = pred[0].size()[0]
 
         for i in range(3):
@@ -119,6 +122,9 @@ class YoloLoss:
             average_wh_loss = torch.sum(wh_loss) / B
             average_conf_loss = torch.sum(conf_loss) / B
             average_class_loss = torch.sum(class_loss) / B
+            loc_loss_sum += average_xy_loss + average_wh_loss
+            conf_loss_sum += average_conf_loss
+            prob_loss_sum += average_class_loss
             total_loss += (average_xy_loss + average_wh_loss + average_conf_loss + average_class_loss)
 
-        return total_loss
+        return total_loss, loc_loss_sum, conf_loss_sum, prob_loss_sum

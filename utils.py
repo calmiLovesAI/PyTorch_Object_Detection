@@ -1,6 +1,7 @@
 import cv2
 import torch
 
+
 def letter_box(image, size):
     h, w, _ = image.shape
     H, W = size
@@ -11,7 +12,8 @@ def letter_box(image, size):
     bottom = H - new_h - top
     left = (W - new_w) // 2
     right = W - new_w - left
-    new_image = cv2.copyMakeBorder(image, top, bottom, left, right, borderType=cv2.BORDER_CONSTANT, value=(128, 128, 128))
+    new_image = cv2.copyMakeBorder(image, top, bottom, left, right, borderType=cv2.BORDER_CONSTANT,
+                                   value=(128, 128, 128))
     return new_image, scale, [top, bottom, left, right]
 
 
@@ -67,3 +69,18 @@ class Iou4:
         iou = intersect_area / union_area
         return iou
 
+
+class MeanMetric:
+    def __init__(self):
+        self.accumulated = 0
+        self.count = 0
+
+    def update(self, value):
+        self.accumulated += value
+        self.count += 1
+
+    def result(self):
+        return self.accumulated / self.count
+
+    def reset(self):
+        self.__init__()

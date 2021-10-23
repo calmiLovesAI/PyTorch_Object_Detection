@@ -10,4 +10,4 @@ def build_train_loader(cfg):
             T.TargetPadding(max_num_boxes=cfg["Train"]["max_num_boxes"]),
             T.ToTensor()
         ]))
-    return DataLoader(dataset=dataset, batch_size=cfg["Train"]["batch_size"], shuffle=True)
+    return DataLoader(dataset=dataset, batch_size=cfg["Train"]["batch_size"], shuffle=True), dataset

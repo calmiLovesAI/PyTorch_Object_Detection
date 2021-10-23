@@ -20,7 +20,7 @@ def predict_bounding_bbox(cfg, feature_map, anchors, idx, device, is_training=Fa
     confidence = torch.sigmoid(confidence)
     class_prob = torch.sigmoid(class_prob)
 
-    center_index = generate_grid_index(length=h, device=device)
+    center_index = generate_grid_index(length=H, device=device)
     center_index = torch.tile(center_index, dims=[1, 3])
     center_index = torch.reshape(center_index, shape=(1, -1, 2))
 

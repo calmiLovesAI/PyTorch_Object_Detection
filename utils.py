@@ -35,3 +35,35 @@ def iou_2(anchors, boxes):
     union_area = anchor_area + box_area - intersect_area
     iou = intersect_area / union_area  # shape : [N, 9]
     return iou
+
+
+class Iou4:
+    def __init__(self, box_1, box_2):
+        """
+
+        :param box_1: Tensor, shape: (..., 4(cx, cy, w, h))
+        :param box_2: Tensor, shape: (..., 4(cx, cy, w, h))
+        """
+        self.box_1_min, self.box_1_max = Iou4._get_box_min_and_max(box_1)
+        self.box_2_min, self.box_2_max = Iou4._get_box_min_and_max(box_2)
+        self.box_1_area = box_1[..., 2] * box_1[..., 3]
+        self.box_2_area = box_2[..., 2] * box_2[..., 3]
+
+    @staticmethod
+    def _get_box_min_and_max(box):
+        box_xy = box[..., 0:2]
+        box_wh = box[..., 2:4]
+        box_min = box_xy - box_wh / 2
+        box_max = box_xy + box_wh / 2
+        return box_min, box_max
+
+    def calculate_iou(self):
+        intersect_min = torch.maximum(self.box_1_min, self.box_2_min)
+        intersect_max = torch.minimum(self.box_1_max, self.box_2_max)
+        intersect_wh = intersect_max - intersect_min
+        intersect_wh = torch.clamp(intersect_wh, min=0)
+        intersect_area = intersect_wh[..., 0] * intersect_wh[..., 1]
+        union_area = self.box_1_area + self.box_2_area - intersect_area
+        iou = intersect_area / union_area
+        return iou
+

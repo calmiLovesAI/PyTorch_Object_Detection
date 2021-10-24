@@ -27,14 +27,16 @@ def apply_nms(cfg, boxes, scores, device):
     num_classes = cfg["Model"]["num_classes"]
     iou_threshold = cfg["Nms"]["iou_threshold"]
 
+    mask = scores >= conf_threshold
+
     box_list = list()
     score_list = list()
     class_list = list()
 
     for i in range(num_classes):
-
-        score_of_class = scores[:, i]
-        indices = nms(boxes=boxes, scores=score_of_class, iou_threshold=iou_threshold)
+        box_of_class = boxes[mask[:, i]]
+        score_of_class = scores[mask[:, i], i]
+        indices = nms(boxes=box_of_class, scores=score_of_class, iou_threshold=iou_threshold)
         selected_boxes = gather_op(boxes, indices, device)
         selected_scores = gather_op(score_of_class, indices, device)
         select_classes = torch.ones(*selected_scores.size(), dtype=torch.int32, device=device) * i
@@ -48,11 +50,11 @@ def apply_nms(cfg, boxes, scores, device):
     classes = torch.cat(class_list, dim=0)
 
     # 筛选出置信度满足条件的box
-    mask = scores >= conf_threshold
-    mask = torch.squeeze(mask, dim=1)
-    boxes = boxes[mask]
-    scores = scores[mask]
-    classes = classes[mask]
+    # mask = scores >= conf_threshold
+    # mask = torch.squeeze(mask, dim=1)
+    # boxes = boxes[mask]
+    # scores = scores[mask]
+    # classes = classes[mask]
 
     classes = torch.squeeze(classes, dim=1)
 

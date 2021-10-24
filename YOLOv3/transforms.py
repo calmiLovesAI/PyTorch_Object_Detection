@@ -44,6 +44,6 @@ class TargetPadding:
 
     def __call__(self, image, target):
         dst = np.full(shape=(self.max_num_boxes, 5), fill_value=-1, dtype=np.float32)
-        for i in range(target.shape[0]):
+        for i in range(min(dst.shape[0], target.shape[0])):
             dst[i] = target[i]
         return image, dst

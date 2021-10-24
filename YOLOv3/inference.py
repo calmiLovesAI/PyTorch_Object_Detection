@@ -99,11 +99,12 @@ def test_pipeline(cfg, model, image_path, device, save_dir):
     image, _, _ = letter_box(image, (cfg["Train"]["input_size"], cfg["Train"]["input_size"]))
     image = to_tensor(image)
     image = torch.unsqueeze(image, dim=0)
+    image = image.to(device=device)
     outputs = model(image)
     boxes, scores, classes = Inference(cfg=cfg, outputs=outputs, input_image_shape=(h, w), device=device).get_results()
-    boxes = boxes.detach().numpy()
-    scores = scores.detach().numpy()
-    classes = classes.detach().numpy()
+    boxes = boxes.cpu().detach().numpy()
+    scores = scores.cpu().detach().numpy()
+    classes = classes.cpu().detach().numpy()
 
     image_with_boxes = draw_boxes_on_image(cfg, image_path, boxes, scores, classes)
 

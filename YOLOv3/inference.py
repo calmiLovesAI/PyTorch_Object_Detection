@@ -4,7 +4,7 @@ import cv2
 from YOLOv3.anchor import get_anchor
 from YOLOv3.nms import apply_nms
 from draw import draw_boxes_on_image
-from utils import ResizeWithPad, letter_box
+from utils import letter_box, reverse_letter_box
 from torchvision.transforms.functional import to_tensor
 
 
@@ -60,24 +60,12 @@ class Inference:
         box_xy, box_wh, confidence, class_prob = predict_bounding_bbox(self.cfg, feature,
                                                                        get_anchor(self.cfg, scale_type, self.device),
                                                                        self.device, is_training=False)
-        boxes = self._boxes_to_original_image(box_xy, box_wh)
+        boxes = reverse_letter_box(self.input_image_h, self.input_image_w, self.cfg["Train"]["input_size"],
+                                   torch.cat((box_xy, box_wh), dim=-1))
         boxes = torch.reshape(boxes, shape=(-1, 4))
         boxes_scores = confidence * class_prob
         boxes_scores = torch.reshape(boxes_scores, shape=(-1, self.cfg["Model"]["num_classes"]))
         return boxes, boxes_scores
-
-    def _boxes_to_original_image(self, box_xy, box_wh):
-        x = box_xy[..., 0:1]
-        y = box_xy[..., 1:2]
-        w = box_wh[..., 0:1]
-        h = box_wh[..., 1:2]
-        x, y, w, h = ResizeWithPad(cfg=self.cfg, h=self.input_image_h, w=self.input_image_w).resized_to_raw(x, y, w, h)
-        xmin = x - w / 2
-        ymin = y - h / 2
-        xmax = x + w / 2
-        ymax = y + h / 2
-        boxes = torch.cat((xmin, ymin, xmax, ymax), dim=-1)
-        return boxes
 
     def get_results(self):
         boxes_list = list()

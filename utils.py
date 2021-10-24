@@ -17,54 +17,31 @@ def letter_box(image, size):
     return new_image, scale, [top, bottom, left, right]
 
 
-class ResizeWithPad:
-    def __init__(self, cfg, h, w):
-        super(ResizeWithPad, self).__init__()
-        self.H = cfg["Train"]["input_size"]
-        self.W = cfg["Train"]["input_size"]
-        self.h = h
-        self.w = w
+def reverse_letter_box(h, w, input_size, boxes):
+    """
 
-    def get_transform_coefficient(self):
-        if self.h <= self.w:
-            longer_edge = "w"
-            scale = self.W / self.w
-            padding_length = (self.H - self.h * scale) / 2
-        else:
-            longer_edge = "h"
-            scale = self.H / self.h
-            padding_length = (self.W - self.w * scale) / 2
-        return longer_edge, scale, padding_length
+    :param h: 输入网络的图片的原始高度
+    :param w: 输入网络的图片的原始宽度
+    :param input_size: 网络的固定输入图片大小
+    :param boxes: Tensor, shape: (..., 4(cx, cy, w, h))
+    :return:
+    """
+    # 转换为(xmin, ymin, xmax, ymax)格式
+    new_boxes = torch.cat((boxes[..., 0:2] - boxes[..., 2:4] / 2, boxes[..., 0:2] + boxes[..., 2:4] / 2), dim=-1)
+    new_boxes *= input_size
 
-    def raw_to_resized(self, x_min, y_min, x_max, y_max):
-        longer_edge, scale, padding_length = self.get_transform_coefficient()
-        x_min = x_min * scale
-        x_max = x_max * scale
-        y_min = y_min * scale
-        y_max = y_max * scale
-        if longer_edge == "h":
-            x_min += padding_length
-            x_max += padding_length
-        else:
-            y_min += padding_length
-            y_max += padding_length
-        return x_min, y_min, x_max, y_max
-
-    def resized_to_raw(self, center_x, center_y, width, height):
-        longer_edge, scale, padding_length = self.get_transform_coefficient()
-        center_x *= self.W
-        width *= self.W
-        center_y *= self.H
-        height *= self.H
-        if longer_edge == "h":
-            center_x -= padding_length
-        else:
-            center_y -= padding_length
-        center_x = center_x / scale
-        center_y = center_y / scale
-        width = width / scale
-        height = height / scale
-        return center_x, center_y, width, height
+    scale = max(h / input_size, w / input_size)
+    # 获取padding值
+    top = (input_size - h / scale) // 2
+    left = (input_size - w / scale) // 2
+    # 减去padding值，就是相对于原始图片的原点位置
+    new_boxes[..., 0] -= left
+    new_boxes[..., 2] -= left
+    new_boxes[..., 1] -= top
+    new_boxes[..., 3] -= top
+    # 缩放到原图尺寸
+    new_boxes *= scale
+    return new_boxes
 
 
 def iou_2(anchors, boxes):

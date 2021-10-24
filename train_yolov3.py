@@ -30,7 +30,7 @@ if __name__ == '__main__':
     criterion = YoloLoss(cfg, device)
 
     # optimizer
-    optimizer = torch.optim.Adam(params=model.parameters())
+    optimizer = torch.optim.Adam(params=model.parameters(), lr=cfg["Train"]["learning_rate"])
 
     loss_mean = MeanMetric()
     loc_loss_mean = MeanMetric()

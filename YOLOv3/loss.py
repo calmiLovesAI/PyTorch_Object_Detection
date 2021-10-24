@@ -13,7 +13,7 @@ def make_label(cfg, true_boxes):
     :return:
     """
     anchors = cfg["Train"]["anchor"]
-    anchors = torch.tensor(anchors, dtype=torch.float32)
+    anchors = torch.tensor(anchors, dtype=torch.float32) / cfg["Train"]["input_size"]
     anchors = torch.reshape(anchors, shape=(1, -1, 2))  # shape: (1, 9, 2)
     anchor_index = cfg["Train"]["anchor_index"]
     features_size = cfg["Model"]["output_features"]
@@ -22,6 +22,8 @@ def make_label(cfg, true_boxes):
 
     center_xy = torch.div(true_boxes[..., 0:2] + true_boxes[..., 2:4], 2, rounding_mode="floor")  # shape : [B, N, 2]
     box_wh = true_boxes[..., 2:4] - true_boxes[..., 0:2]  # shape : [B, N, 2]
+    true_boxes[..., 0:2] = center_xy
+    true_boxes[..., 2:4] = box_wh
     true_labels = [torch.zeros(batch_size, features_size[i], features_size[i], 3, num_classes + 5) for i in range(3)]
     valid_mask = box_wh[..., 0] > 0
 
@@ -103,10 +105,11 @@ class YoloLoss:
             ignore_mask = torch.stack(ignore_mask_list, dim=0)
             ignore_mask = torch.unsqueeze(ignore_mask, dim=-1)
 
-            xy_loss = true_object_mask * box_loss_scale * F.binary_cross_entropy_with_logits(
-                input=pred_features[..., 0:2],
-                target=true_xy_offset,
-                reduction='none')
+            # xy_loss = true_object_mask * box_loss_scale * F.binary_cross_entropy_with_logits(
+            #     input=pred_features[..., 0:2],
+            #     target=true_xy_offset,
+            #     reduction='none')
+            xy_loss = true_object_mask * box_loss_scale * torch.square(true_xy_offset - pred_features[..., 0:2])
             wh_loss = 0.5 * true_object_mask * box_loss_scale * torch.square(true_wh_offset - pred_features[..., 2:4])
             conf_loss = true_object_mask * F.binary_cross_entropy_with_logits(input=pred_features[..., 4:5],
                                                                               target=true_object_mask,

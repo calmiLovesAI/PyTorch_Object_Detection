@@ -9,12 +9,12 @@ Train:
   test_pictures:
     - ""
   # "voc" or "coco"
-  dataset_name: "voc"
+  dataset_name: "coco"
   max_num_boxes: 20
   anchor: [116, 90, 156, 198, 373, 326, 30, 61, 62, 45, 59, 119, 10, 13, 16, 30, 33, 23]
   anchor_index: [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
 Model:
-  num_classes: 20
+  num_classes: 80
   output_features: [13, 26, 52]
 Loss:
   ignore_threshold: 0.5
@@ -46,7 +46,7 @@ VOC:
     - "sofa"
     - "tvmonitor"
 COCO:
-  root: ""
+  root: "./data/coco/"
   num_classes: 80
   classes:
     - "person"

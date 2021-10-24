@@ -3,6 +3,7 @@ import torch.nn.functional as F
 
 from utils import iou_2, Iou4
 from YOLOv3.inference import predict_bounding_bbox
+from YOLOv3.anchor import get_anchor
 
 
 def make_label(cfg, true_boxes):
@@ -52,18 +53,12 @@ class YoloLoss:
     def __init__(self, cfg, device):
         self.cfg = cfg
         self.device = device
-        self.anchors = cfg["Train"]["anchor"]
-        self.anchors = torch.tensor(self.anchors, dtype=torch.float32, device=device)
-        self.anchors = torch.reshape(self.anchors, shape=(-1, 2))
+        # self.anchors = cfg["Train"]["anchor"]
+        # self.anchors = torch.tensor(self.anchors, dtype=torch.float32, device=device)
+        # self.anchors = torch.reshape(self.anchors, shape=(-1, 2))
         self.scale_tensor = torch.tensor(cfg["Model"]["output_features"], dtype=torch.float32, device=self.device)
         self.grid_shape = torch.stack((self.scale_tensor, self.scale_tensor), dim=-1)
         self.ignore_threshold = cfg["Loss"]["ignore_threshold"]
-
-    def _get_scale_size(self, i):
-        ori_size = torch.tensor([self.cfg["Train"]["input_size"], self.cfg["Train"]["input_size"]], dtype=torch.float32,
-                                device=self.device)
-        anchor_size = self.anchors[i * 3:(i + 1) * 3, :]
-        return torch.div(ori_size, anchor_size)
 
     def __call__(self, pred, target):
         total_loss = 0
@@ -79,20 +74,20 @@ class YoloLoss:
 
             pred_xy, pred_wh, grid, pred_features = predict_bounding_bbox(cfg=self.cfg,
                                                                           feature_map=pred[i],
-                                                                          anchors=self.anchors,
-                                                                          idx=i,
+                                                                          anchors=get_anchor(self.cfg, i, self.device),
                                                                           device=self.device,
                                                                           is_training=True)
             pred_box = torch.cat((pred_xy, pred_wh), dim=-1)
             true_xy_offset = target[i][..., 0:2] * self.grid_shape[i] - grid
-            true_wh_offset = torch.log(target[i][..., 2:4] * self._get_scale_size(i) + 1e-10)
+            true_wh_offset = torch.log(target[i][..., 2:4] / get_anchor(self.cfg, i, self.device))
             true_wh_offset = torch.where(true_object_mask_bool, true_wh_offset,
                                          torch.zeros_like(true_wh_offset, dtype=torch.float32, device=self.device))
 
             box_loss_scale = 2 - target[i][..., 2:3] * target[i][..., 3:4]
             ignore_mask_list = list()
             for j in range(B):
-                true_box = torch.masked_select(target[i][j, ..., 0:4], true_object_mask_bool[j, ..., 0:1])
+                true_box = target[i][j, ..., 0:4]
+                true_box = true_box[true_object_mask_bool[j].expand_as(true_box)]
                 true_box = torch.reshape(true_box, shape=(-1, 4))
                 true_box = torch.unsqueeze(true_box, dim=0)
                 iou = Iou4(box_1=torch.unsqueeze(pred_box[j], dim=-2), box_2=true_box).calculate_iou()
@@ -109,8 +104,9 @@ class YoloLoss:
             #     input=pred_features[..., 0:2],
             #     target=true_xy_offset,
             #     reduction='none')
-            xy_loss = true_object_mask * box_loss_scale * torch.square(true_xy_offset - pred_features[..., 0:2])
-            wh_loss = 0.5 * true_object_mask * box_loss_scale * torch.square(true_wh_offset - pred_features[..., 2:4])
+            mse_loss = torch.nn.MSELoss(reduction="none")
+            xy_loss = mse_loss(pred_features[..., 0:2], true_xy_offset) * true_object_mask * box_loss_scale
+            wh_loss = mse_loss(pred_features[..., 2:4], true_wh_offset) * true_object_mask * box_loss_scale
             conf_loss = true_object_mask * F.binary_cross_entropy_with_logits(input=pred_features[..., 4:5],
                                                                               target=true_object_mask,
                                                                               reduction="none") + (
@@ -122,13 +118,12 @@ class YoloLoss:
                                                                                target=true_class_probs,
                                                                                reduction="none")
 
-            average_xy_loss = torch.sum(xy_loss) / B
-            average_wh_loss = torch.sum(wh_loss) / B
+            average_loc_loss = torch.sum(xy_loss + wh_loss) / B
             average_conf_loss = torch.sum(conf_loss) / B
             average_class_loss = torch.sum(class_loss) / B
-            loc_loss_sum += average_xy_loss + average_wh_loss
+            loc_loss_sum += average_loc_loss
             conf_loss_sum += average_conf_loss
             prob_loss_sum += average_class_loss
-            total_loss += (average_xy_loss + average_wh_loss + average_conf_loss + average_class_loss)
+            total_loss += (average_loc_loss + average_conf_loss + average_class_loss)
 
         return total_loss, loc_loss_sum, conf_loss_sum, prob_loss_sum

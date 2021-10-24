@@ -49,13 +49,6 @@ def apply_nms(cfg, boxes, scores, device):
     scores = torch.cat(score_list, dim=0)
     classes = torch.cat(class_list, dim=0)
 
-    # 筛选出置信度满足条件的box
-    # mask = scores >= conf_threshold
-    # mask = torch.squeeze(mask, dim=1)
-    # boxes = boxes[mask]
-    # scores = scores[mask]
-    # classes = classes[mask]
-
     classes = torch.squeeze(classes, dim=1)
 
     return boxes, scores, classes

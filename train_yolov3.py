@@ -32,6 +32,7 @@ if __name__ == '__main__':
     load_weights = cfg["Train"]["load_weights"]    # 训练之前是否加载权重
     test_during_training = cfg["Train"]["test_during_training"]    # 是否在每一轮epoch结束后开启图片测试
     resume_training_from_epoch = cfg["Train"]["resume_training_from_epoch"]
+    tensorboard_on = cfg["Train"]["tensorboard_on"]   # 是否开启tensorboard
 
     # tensorboard --logdir=runs
     writer = SummaryWriter()
@@ -73,10 +74,10 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             preds = model(images)
             loss, loc_loss, conf_loss, prob_loss = criterion(preds, labels)
-            loss_mean.update(loss)
-            loc_loss_mean.update(loc_loss)
-            conf_loss_mean.update(conf_loss)
-            prob_loss_mean.update(prob_loss)
+            loss_mean.update(loss.item())
+            loc_loss_mean.update(loc_loss.item())
+            conf_loss_mean.update(conf_loss.item())
+            prob_loss_mean.update(prob_loss.item())
             loss.backward()
             optimizer.step()
 
@@ -91,15 +92,16 @@ if __name__ == '__main__':
                                                                       conf_loss_mean.result(),
                                                                       prob_loss_mean.result(),
                                                                       ))
-            writer.add_graph(model, images)
-            writer.add_scalar(tag="Total Loss", scalar_value=loss_mean.result(),
-                              global_step=epoch * len(train_loader) + i)
-            writer.add_scalar(tag="Loc Loss", scalar_value=loc_loss_mean.result(),
-                              global_step=epoch * len(train_loader) + i)
-            writer.add_scalar(tag="Conf Loss", scalar_value=conf_loss_mean.result(),
-                              global_step=epoch * len(train_loader) + i)
-            writer.add_scalar(tag="Prob Loss", scalar_value=prob_loss_mean.result(),
-                              global_step=epoch * len(train_loader) + i)
+            if tensorboard_on:
+                writer.add_graph(model, images)
+                writer.add_scalar(tag="Total Loss", scalar_value=loss_mean.result(),
+                                  global_step=epoch * len(train_loader) + i)
+                writer.add_scalar(tag="Loc Loss", scalar_value=loc_loss_mean.result(),
+                                  global_step=epoch * len(train_loader) + i)
+                writer.add_scalar(tag="Conf Loss", scalar_value=conf_loss_mean.result(),
+                                  global_step=epoch * len(train_loader) + i)
+                writer.add_scalar(tag="Prob Loss", scalar_value=prob_loss_mean.result(),
+                                  global_step=epoch * len(train_loader) + i)
 
         loss_mean.reset()
         loc_loss_mean.reset()
@@ -114,6 +116,7 @@ if __name__ == '__main__':
             model.eval()
             detect(cfg, model, test_pictures, device, info="epoch-{}".format(epoch))
 
-    writer.close()
+    if tensorboard_on:
+        writer.close()
     torch.save(model.state_dict(), save_path + "YOLOv3.pth")
 

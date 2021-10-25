@@ -8,6 +8,7 @@ Train:
   test_during_training: True
   load_weights: False
   resume_training_from_epoch: 0
+  tensorboard_on: True
   test_pictures:
     - ""
   video_dir: ""

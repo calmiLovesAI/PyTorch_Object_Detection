@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     model = YoloV3(cfg["Model"]["num_classes"])
     model.to(device=device)
-    model.load_state_dict(torch.load(cfg["Train"]["save_path"] + "YOLOv3_epoch_10.pth", map_location=device))
+    model.load_state_dict(torch.load(cfg["Train"]["save_path"] + "YOLOv3.pth", map_location=device))
     model.eval()
 
     detect(cfg, model, cfg["Train"]["test_pictures"], device, info=get_time_format())

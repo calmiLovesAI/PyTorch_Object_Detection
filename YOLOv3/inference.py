@@ -80,7 +80,7 @@ class Inference:
         return apply_nms(self.cfg, boxes, scores, self.device)
 
 
-def test_pipeline(cfg, model, image_path, device, save_dir):
+def test_pipeline(cfg, model, image_path, device, save_dir=None, print_on=True, save_result=True):
     image = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     h, w, c = image.shape
@@ -93,8 +93,16 @@ def test_pipeline(cfg, model, image_path, device, save_dir):
     boxes = boxes.cpu().detach().numpy()
     scores = scores.cpu().detach().numpy()
     classes = classes.cpu().detach().numpy()
+    if print_on:
+        print("检测结果：")
+        print("boxes: ", boxes)
+        print("scores: ", scores)
+        print("classes: ", classes)
 
     image_with_boxes = draw_boxes_on_image(cfg, image_path, boxes, scores, classes)
 
-    # 保存检测结果
-    cv2.imwrite(save_dir, image_with_boxes)
+    if save_result:
+        # 保存检测结果
+        cv2.imwrite(save_dir, image_with_boxes)
+    else:
+        return image_with_boxes

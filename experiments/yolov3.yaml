@@ -10,6 +10,7 @@ Train:
   resume_training_from_epoch: 0
   test_pictures:
     - ""
+  video_dir: ""
   # "voc" or "coco"
   dataset_name: "voc"
   max_num_boxes: 20

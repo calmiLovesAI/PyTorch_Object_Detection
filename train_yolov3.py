@@ -26,13 +26,13 @@ if __name__ == '__main__':
     batch_size = cfg["Train"]["batch_size"]
     num_classes = cfg["Model"]["num_classes"]
     learning_rate = cfg["Train"]["learning_rate"]
-    save_frequency = cfg["Train"]["save_frequency"]   # 模型保存频率
-    save_path = cfg["Train"]["save_path"]   # 模型保存路径
-    test_pictures = cfg["Train"]["test_pictures"]   # 测试图片路径列表
-    load_weights = cfg["Train"]["load_weights"]    # 训练之前是否加载权重
-    test_during_training = cfg["Train"]["test_during_training"]    # 是否在每一轮epoch结束后开启图片测试
+    save_frequency = cfg["Train"]["save_frequency"]  # 模型保存频率
+    save_path = cfg["Train"]["save_path"]  # 模型保存路径
+    test_pictures = cfg["Train"]["test_pictures"]  # 测试图片路径列表
+    load_weights = cfg["Train"]["load_weights"]  # 训练之前是否加载权重
+    test_during_training = cfg["Train"]["test_during_training"]  # 是否在每一轮epoch结束后开启图片测试
     resume_training_from_epoch = cfg["Train"]["resume_training_from_epoch"]
-    tensorboard_on = cfg["Train"]["tensorboard_on"]   # 是否开启tensorboard
+    tensorboard_on = cfg["Train"]["tensorboard_on"]  # 是否开启tensorboard
 
     # tensorboard --logdir=runs
     writer = SummaryWriter()
@@ -62,7 +62,11 @@ if __name__ == '__main__':
         model.load_state_dict(torch.load(saved_model, map_location=device))
         start_epoch = resume_training_from_epoch
 
-    for epoch in range(start_epoch+1, epochs):
+    if tensorboard_on:
+        writer.add_graph(model, torch.randn(batch_size, 3, cfg["Train"]["input_size"], cfg["Train"]["input_size"],
+                                            dtype=torch.float32, device=device))
+
+    for epoch in range(start_epoch + 1, epochs):
         model.train()
         for i, (img, tar) in enumerate(train_loader):
             start_time = time.time()
@@ -93,7 +97,6 @@ if __name__ == '__main__':
                                                                       prob_loss_mean.result(),
                                                                       ))
             if tensorboard_on:
-                writer.add_graph(model, images)
                 writer.add_scalar(tag="Total Loss", scalar_value=loss_mean.result(),
                                   global_step=epoch * len(train_loader) + i)
                 writer.add_scalar(tag="Loc Loss", scalar_value=loc_loss_mean.result(),
@@ -119,4 +122,3 @@ if __name__ == '__main__':
     if tensorboard_on:
         writer.close()
     torch.save(model.state_dict(), save_path + "YOLOv3.pth")
-

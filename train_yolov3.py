@@ -1,7 +1,6 @@
 import yaml
 import torch
 import time
-import os
 
 from pathlib import Path
 from YOLOv3.check import check_cfg
@@ -92,6 +91,7 @@ if __name__ == '__main__':
                                                                       conf_loss_mean.result(),
                                                                       prob_loss_mean.result(),
                                                                       ))
+            writer.add_graph(model, images)
             writer.add_scalar(tag="Total Loss", scalar_value=loss_mean.result(),
                               global_step=epoch * len(train_loader) + i)
             writer.add_scalar(tag="Loc Loss", scalar_value=loc_loss_mean.result(),

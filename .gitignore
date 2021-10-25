@@ -6,3 +6,4 @@ __pycache__
 !/saved_model/README.md
 /detect/*
 !/detect/README.md
+/runs/*

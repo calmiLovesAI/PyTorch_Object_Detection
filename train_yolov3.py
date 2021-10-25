@@ -11,6 +11,8 @@ from YOLOv3.model import YoloV3
 from utils import MeanMetric
 from test_yolov3 import detect
 
+from torch.utils.tensorboard import SummaryWriter
+
 if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("PyTorch version: {}, Device: {}".format(torch.__version__, device))
@@ -32,9 +34,11 @@ if __name__ == '__main__':
     test_during_training = cfg["Train"]["test_during_training"]    # 是否在每一轮epoch结束后开启图片测试
     resume_training_from_epoch = cfg["Train"]["resume_training_from_epoch"]
 
+    # tensorboard --logdir=runs
+    writer = SummaryWriter()
+
     # 数据集
-    train_loader, train_data = build_train_loader(cfg)
-    steps_per_epoch = len(train_data) // batch_size
+    train_loader = build_train_loader(cfg)
 
     # 模型
     model = YoloV3(num_classes)
@@ -81,13 +85,21 @@ if __name__ == '__main__':
                   "loc_loss: {}, conf_loss: {}, prob_loss: {}".format(epoch,
                                                                       epochs,
                                                                       i,
-                                                                      steps_per_epoch,
+                                                                      len(train_loader),
                                                                       time.time() - start_time,
                                                                       loss_mean.result(),
                                                                       loc_loss_mean.result(),
                                                                       conf_loss_mean.result(),
                                                                       prob_loss_mean.result(),
                                                                       ))
+            writer.add_scalar(tag="Total Loss", scalar_value=loss_mean.result(),
+                              global_step=epoch * len(train_loader) + i)
+            writer.add_scalar(tag="Loc Loss", scalar_value=loc_loss_mean.result(),
+                              global_step=epoch * len(train_loader) + i)
+            writer.add_scalar(tag="Conf Loss", scalar_value=conf_loss_mean.result(),
+                              global_step=epoch * len(train_loader) + i)
+            writer.add_scalar(tag="Prob Loss", scalar_value=prob_loss_mean.result(),
+                              global_step=epoch * len(train_loader) + i)
 
         loss_mean.reset()
         loc_loss_mean.reset()
@@ -102,5 +114,6 @@ if __name__ == '__main__':
             model.eval()
             detect(cfg, model, test_pictures, device, info="epoch-{}".format(epoch))
 
+    writer.close()
     torch.save(model.state_dict(), save_path + "YOLOv3.pth")
 

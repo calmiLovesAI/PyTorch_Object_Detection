@@ -20,4 +20,4 @@ def build_train_loader(cfg):
         ]))
     else:
         raise ValueError("参数cfg->Train->dataset_name错误")
-    return DataLoader(dataset=dataset, batch_size=cfg["Train"]["batch_size"], shuffle=True), dataset
+    return DataLoader(dataset=dataset, batch_size=cfg["Train"]["batch_size"], shuffle=True)

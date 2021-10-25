@@ -49,6 +49,8 @@ if __name__ == '__main__':
 
     # optimizer
     optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate)
+    # 学习率调整
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", patience=2)
 
     loss_mean = MeanMetric()
     loc_loss_mean = MeanMetric()
@@ -96,6 +98,7 @@ if __name__ == '__main__':
                                                                       conf_loss_mean.result(),
                                                                       prob_loss_mean.result(),
                                                                       ))
+
             if tensorboard_on:
                 writer.add_scalar(tag="Total Loss", scalar_value=loss_mean.result(),
                                   global_step=epoch * len(train_loader) + i)
@@ -105,6 +108,8 @@ if __name__ == '__main__':
                                   global_step=epoch * len(train_loader) + i)
                 writer.add_scalar(tag="Prob Loss", scalar_value=prob_loss_mean.result(),
                                   global_step=epoch * len(train_loader) + i)
+
+        scheduler.step(loss_mean.result())
 
         loss_mean.reset()
         loc_loss_mean.reset()

@@ -53,9 +53,6 @@ class YoloLoss:
     def __init__(self, cfg, device):
         self.cfg = cfg
         self.device = device
-        # self.anchors = cfg["Train"]["anchor"]
-        # self.anchors = torch.tensor(self.anchors, dtype=torch.float32, device=device)
-        # self.anchors = torch.reshape(self.anchors, shape=(-1, 2))
         self.scale_tensor = torch.tensor(cfg["Model"]["output_features"], dtype=torch.float32, device=self.device)
         self.grid_shape = torch.stack((self.scale_tensor, self.scale_tensor), dim=-1)
         self.ignore_threshold = cfg["Loss"]["ignore_threshold"]

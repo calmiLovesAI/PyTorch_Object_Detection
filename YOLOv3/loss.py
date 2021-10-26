@@ -21,7 +21,7 @@ def make_label(cfg, true_boxes):
     num_classes = cfg["Model"]["num_classes"]
     batch_size = true_boxes.size()[0]
 
-    center_xy = torch.div(true_boxes[..., 0:2] + true_boxes[..., 2:4], 2, rounding_mode="floor")  # shape : [B, N, 2]
+    center_xy = torch.div(true_boxes[..., 0:2] + true_boxes[..., 2:4], 2)  # shape : [B, N, 2]
     box_wh = true_boxes[..., 2:4] - true_boxes[..., 0:2]  # shape : [B, N, 2]
     true_boxes[..., 0:2] = center_xy
     true_boxes[..., 2:4] = box_wh

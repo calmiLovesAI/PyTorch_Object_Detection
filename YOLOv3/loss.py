@@ -92,7 +92,7 @@ class YoloLoss:
                     best_iou, _ = torch.max(iou, dim=-1)
                     ignore_mask_list.append((best_iou < self.ignore_threshold).float())
                 else:
-                    ignore_mask_list.append(torch.zeros(*iou.size()[:-1], dtype=torch.float32, device=self.device))
+                    ignore_mask_list.append(torch.ones(*iou.size()[:-1], dtype=torch.float32, device=self.device))
 
             ignore_mask = torch.stack(ignore_mask_list, dim=0)
             ignore_mask = torch.unsqueeze(ignore_mask, dim=-1)
@@ -102,7 +102,6 @@ class YoloLoss:
                 target=true_xy_offset,
                 reduction='none')
             mse_loss = torch.nn.MSELoss(reduction="none")
-            # xy_loss = mse_loss(pred_features[..., 0:2], true_xy_offset) * true_object_mask * box_loss_scale
             wh_loss = mse_loss(pred_features[..., 2:4], true_wh_offset) * true_object_mask * box_loss_scale * 0.5
             conf_loss = true_object_mask * F.binary_cross_entropy_with_logits(input=pred_features[..., 4:5],
                                                                               target=true_object_mask,

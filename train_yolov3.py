@@ -117,8 +117,7 @@ if __name__ == '__main__':
         prob_loss_mean.reset()
 
         if epoch % save_frequency == 0:
-            save_path = save_path + "YOLOv3_epoch_{}.pth".format(epoch)
-            torch.save(model.state_dict(), save_path)
+            torch.save(model.state_dict(), save_path + "YOLOv3_epoch_{}.pth".format(epoch))
 
         if test_during_training:
             model.eval()

@@ -1,32 +1,12 @@
-Train:
+Tain:
   epochs: 100
   batch_size: 8
   learning_rate: 0.001
-  input_size: 416
-  save_path: "./saved_model/"
-  save_frequency: 5
-  test_during_training: True
-  load_weights: False
-  resume_training_from_epoch: 0
-  tensorboard_on: True
+  input_size: 608
+Test:
   test_pictures:
     - ""
   video_dir: ""
-  video_save_dir: ""
-  save_video: True
-  # "voc" or "coco"
-  dataset_name: "voc"
-  max_num_boxes: 20
-  anchor: [116, 90, 156, 198, 373, 326, 30, 61, 62, 45, 59, 119, 10, 13, 16, 30, 33, 23]
-  anchor_index: [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
-Model:
-  num_classes: 20
-  output_features: [13, 26, 52]
-Loss:
-  ignore_threshold: 0.5
-Nms:
-  conf_threshold: 0.3
-  iou_threshold: 0.5
 VOC:
   root: "./data/VOCdevkit/VOC2012/"
   num_classes: 20

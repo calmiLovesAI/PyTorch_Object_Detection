@@ -11,7 +11,7 @@ from torchvision.transforms.functional import to_tensor
 def generate_grid_index(length, device):
     x = torch.arange(start=0, end=length, step=1, dtype=torch.float32, device=device)
     y = torch.arange(start=0, end=length, step=1, dtype=torch.float32, device=device)
-    X, Y = torch.meshgrid(x, y, indexing="ij")
+    X, Y = torch.meshgrid(x, y, indexing="xy")
     X = torch.reshape(X, shape=(-1, 1))
     Y = torch.reshape(Y, shape=(-1, 1))
     return torch.cat((X, Y), dim=-1)

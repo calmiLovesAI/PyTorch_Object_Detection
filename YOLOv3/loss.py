@@ -101,8 +101,7 @@ class YoloLoss:
                 input=pred_features[..., 0:2],
                 target=true_xy_offset,
                 reduction='none')
-            mse_loss = torch.nn.MSELoss(reduction="none")
-            wh_loss = mse_loss(pred_features[..., 2:4], true_wh_offset) * true_object_mask * box_loss_scale * 0.5
+            wh_loss = torch.square(pred_features[..., 2:4] - true_wh_offset) * true_object_mask * box_loss_scale * 0.5
             conf_loss = true_object_mask * F.binary_cross_entropy_with_logits(input=pred_features[..., 4:5],
                                                                               target=true_object_mask,
                                                                               reduction="none") + (

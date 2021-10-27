@@ -37,7 +37,7 @@ def apply_nms(cfg, boxes, scores, device):
         box_of_class = boxes[mask[:, i]]
         score_of_class = scores[mask[:, i], i]
         indices = nms(boxes=box_of_class, scores=score_of_class, iou_threshold=iou_threshold)
-        selected_boxes = gather_op(boxes, indices, device)
+        selected_boxes = gather_op(box_of_class, indices, device)
         selected_scores = gather_op(score_of_class, indices, device)
         select_classes = torch.ones(*selected_scores.size(), dtype=torch.int32, device=device) * i
 

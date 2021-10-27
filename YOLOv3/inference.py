@@ -8,44 +8,65 @@ from utils import letter_box, reverse_letter_box
 from torchvision.transforms.functional import to_tensor
 
 
-def generate_grid_index(length, device):
-    x = torch.arange(start=0, end=length, step=1, dtype=torch.float32, device=device)
-    y = torch.arange(start=0, end=length, step=1, dtype=torch.float32, device=device)
-    X, Y = torch.meshgrid(x, y, indexing="xy")
-    X = torch.reshape(X, shape=(-1, 1))
-    Y = torch.reshape(Y, shape=(-1, 1))
-    return torch.cat((X, Y), dim=-1)
+# def generate_grid_index(length, device):
+#     x = torch.arange(start=0, end=length, step=1, dtype=torch.float32, device=device)
+#     y = torch.arange(start=0, end=length, step=1, dtype=torch.float32, device=device)
+#     X, Y = torch.meshgrid(x, y, indexing="xy")
+#     X = torch.reshape(X, shape=(-1, 1))
+#     Y = torch.reshape(Y, shape=(-1, 1))
+#     return torch.cat((X, Y), dim=-1)
 
 
 def predict_bounding_bbox(cfg, feature_map, anchors, device, is_training=False):
     num_classes = cfg["Model"]["num_classes"]
     N, C, H, W = feature_map.size()
     feature_map = torch.permute(feature_map, dims=(0, 2, 3, 1))
-    area = H * W
-    pred = torch.reshape(feature_map, shape=(N, area * 3, -1))
-    tx_ty, tw_th, confidence, class_prob = torch.split(pred, split_size_or_sections=[2, 2, 1, num_classes], dim=-1)
-    confidence = torch.sigmoid(confidence)
-    class_prob = torch.sigmoid(class_prob)
-
-    center_index = generate_grid_index(length=H, device=device)
-    center_index = torch.tile(center_index, dims=[1, 3])
-    center_index = torch.reshape(center_index, shape=(1, -1, 2))
-
-    center_coord = center_index + torch.sigmoid(tx_ty)
-    box_xy = center_coord / H
-    anchors = torch.tile(anchors, dims=[area, 1])
-    box_wh = anchors * torch.exp(tw_th)
-
-    # reshape
-    center_index = torch.reshape(center_index, shape=(-1, H, W, 3, 2))
-    box_xy = torch.reshape(box_xy, shape=(-1, H, W, 3, 2))
-    box_wh = torch.reshape(box_wh, shape=(-1, H, W, 3, 2))
+    anchors = torch.reshape(anchors, shape=(1, 1, 1, -1, 2))
+    grid_y = torch.reshape(torch.arange(0, H, dtype=torch.float32, device=device), (-1, 1, 1, 1))
+    grid_y = torch.tile(grid_y, dims=(1, W, 1, 1))
+    grid_x = torch.reshape(torch.arange(0, W, dtype=torch.float32, device=device), (1, -1, 1, 1))
+    grid_x = torch.tile(grid_x, dims=(H, 1, 1, 1))
+    grid = torch.cat((grid_x, grid_y), dim=-1)
     feature_map = torch.reshape(feature_map, shape=(-1, H, W, 3, num_classes + 5))
-
+    box_xy = (torch.sigmoid(feature_map[..., 0:2]) + grid) / H
+    box_wh = torch.exp(feature_map[..., 2:4]) * anchors
+    confidence = torch.sigmoid(feature_map[..., 4:5])
+    class_prob = torch.sigmoid(feature_map[..., 5:])
     if is_training:
-        return box_xy, box_wh, center_index, feature_map
+        return box_xy, box_wh, grid, feature_map
     else:
         return box_xy, box_wh, confidence, class_prob
+
+
+# def predict_bounding_bbox(cfg, feature_map, anchors, device, is_training=False):
+#     num_classes = cfg["Model"]["num_classes"]
+#     N, C, H, W = feature_map.size()
+#     feature_map = torch.permute(feature_map, dims=(0, 2, 3, 1))
+#     area = H * W
+#     pred = torch.reshape(feature_map, shape=(N, area * 3, -1))
+#     tx_ty, tw_th, confidence, class_prob = torch.split(pred, split_size_or_sections=[2, 2, 1, num_classes], dim=-1)
+#     confidence = torch.sigmoid(confidence)
+#     class_prob = torch.sigmoid(class_prob)
+#
+#     center_index = generate_grid_index(length=H, device=device)
+#     center_index = torch.tile(center_index, dims=[1, 3])
+#     center_index = torch.reshape(center_index, shape=(1, -1, 2))
+#
+#     center_coord = center_index + torch.sigmoid(tx_ty)
+#     box_xy = center_coord / H
+#     anchors = torch.tile(anchors, dims=[area, 1])
+#     box_wh = anchors * torch.exp(tw_th)
+#
+#     # reshape
+#     center_index = torch.reshape(center_index, shape=(-1, H, W, 3, 2))
+#     box_xy = torch.reshape(box_xy, shape=(-1, H, W, 3, 2))
+#     box_wh = torch.reshape(box_wh, shape=(-1, H, W, 3, 2))
+#     feature_map = torch.reshape(feature_map, shape=(-1, H, W, 3, num_classes + 5))
+#
+#     if is_training:
+#         return box_xy, box_wh, center_index, feature_map
+#     else:
+#         return box_xy, box_wh, confidence, class_prob
 
 
 class Inference:

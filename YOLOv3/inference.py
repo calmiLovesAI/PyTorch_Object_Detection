@@ -3,7 +3,7 @@ import cv2
 
 from YOLOv3.anchor import get_anchor
 from YOLOv3.nms import apply_nms
-from draw import draw_boxes_on_image
+from draw import Draw
 from utils import letter_box, reverse_letter_box
 from torchvision.transforms.functional import to_tensor
 
@@ -80,7 +80,8 @@ def test_pipeline(cfg, model, image_path, device, save_dir=None, print_on=True, 
         print("scores: ", scores)
         print("classes: ", classes)
 
-    image_with_boxes = draw_boxes_on_image(cfg, image_path, boxes, scores, classes)
+    painter = Draw(cfg)
+    image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
 
     if save_result:
         # 保存检测结果

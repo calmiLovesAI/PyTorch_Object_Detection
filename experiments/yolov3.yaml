@@ -25,7 +25,7 @@ Model:
 Loss:
   ignore_threshold: 0.5
 Nms:
-  conf_threshold: 0.3
+  conf_threshold: 0.1
   iou_threshold: 0.5
 VOC:
   root: "./data/VOCdevkit/VOC2012/"

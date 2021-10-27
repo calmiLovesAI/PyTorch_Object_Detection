@@ -71,7 +71,7 @@ class Video:
         # 帧尺寸
         frame_size = (
             int(video_capture_2.get(cv2.CAP_PROP_FRAME_WIDTH)), int(video_capture_2.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         video_writer = cv2.VideoWriter(self.write_video_dir, fourcc, fps, frame_size)
         num_of_frame = 0  # 帧数
         while True:

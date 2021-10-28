@@ -9,8 +9,8 @@ YOLOv3, YOLOv4, YOLOv5, YOLOX的PyTorch实现。（持续更新中......）
 
 # 运行结果(Results)
 1. YoloV3 on VOC<br>
-![测试图片1.jpg]()
-![测试图片2.jpg]()
+![测试图片1.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample1.jpg?raw=True)
+![测试图片2.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample2.jpg?raw=true)
 # TODO list
 1. 训练和测试代码
 - [x] Yolo_v3

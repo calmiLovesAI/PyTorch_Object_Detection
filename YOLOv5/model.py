@@ -21,10 +21,10 @@ class CBL(nn.Module):
 
 
 class Focus(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride):
+    def __init__(self, c_in, c_out, kernel_size, stride):
         super(Focus, self).__init__()
         # 分组卷积
-        self.conv = CBL(in_channels * 4, out_channels, kernel_size, stride, padding=None, groups=4)
+        self.conv = CBL(c_in * 4, c_out, kernel_size, stride, padding=None, groups=4)
 
     def forward(self, x):
         x = torch.cat((x[..., ::2, ::2], x[..., 1::2, ::2], x[..., ::2, 1::2], x[..., 1::2, 1::2]), dim=1)
@@ -35,34 +35,89 @@ class Bottleneck(nn.Module):
     """
     残差网络结构
     """
-    def __init__(self):
+
+    def __init__(self, c_in, c_out, g=1):
         super(Bottleneck, self).__init__()
-        pass
+        self.conv1 = CBL(c_in, c_out / 2, 1, 1)
+        self.conv2 = CBL(c_out / 2, c_out, 3, 1, groups=g)
 
     def forward(self, x):
-        pass
+        return x + self.conv2(self.conv1(x))
 
 
-class CSPWithBottleneck(nn.Module):
-    """
-    第一种CSP结构，使用了残差模块
-    """
+class BottleneckCSP(nn.Module):
     def __init__(self):
-        super(CSPWithBottleneck, self).__init__()
+        super(BottleneckCSP, self).__init__()
         pass
 
     def forward(self, x):
         pass
 
 
-class CSPWithConv(nn.Module):
+class C3(nn.Module):
     """
-    第二种CSP结构，使用卷积模块替代了残差模块
+    使用了3个卷积的CSP模块
     """
+
+    def __init__(self, c_in, c_out, n=1, g=1):
+        super(C3, self).__init__()
+        c_ = int(c_out / 2)  # 中间层的通道数
+        self.conv1 = CBL(c_in, c_, 1, 1)
+        self.conv2 = CBL(c_in, c_, 1, 1)
+        self.conv3 = CBL(2 * c_, c_out, 1, 1)
+        self.m = nn.Sequential(*[Bottleneck(c_, c_, g) for _ in range(n)])
+
+    def forward(self, x):
+        x1 = self.conv1(x)
+        x1 = self.m(x1)
+        x2 = self.conv2(x)
+        x3 = torch.cat((x1, x2), dim=1)
+        return self.conv3(x3)
+
+
+class SPP(nn.Module):
+    """
+    Spatial Pyramid Pooling
+    """
+
+    def __init__(self, c_in, c_out, k=(5, 9, 13)):
+        super(SPP, self).__init__()
+        c_ = c_in // 2
+        self.conv1 = CBL(c_in, c_, 1, 1)
+        self.conv2 = CBL(c_ * (len(k) + 1), c_out, 1, 1)
+        self.pools = nn.ModuleList([nn.MaxPool2d(kernel_size=x, stride=1, padding=x // 2) for x in k])
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = torch.cat([x] + [pool(x) for pool in self.pools], dim=1)
+        x = self.conv2(x)
+        return x
+
+
+class SPPF(nn.Module):
+    """
+    Spatial Pyramid Pooling Fast
+    """
+
+    def __init__(self, c_in, c_out, k=5):
+        super(SPPF, self).__init__()
+        c_ = c_in // 2
+        self.conv1 = CBL(c_in, c_, 1, 1)
+        self.conv2 = CBL(c_ * 4, c_out, 1, 1)
+        self.pool = nn.MaxPool2d(kernel_size=k, stride=1, padding=k // 2)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x1 = self.pool(x)
+        x2 = self.pool(x1)
+        x3 = self.pool(x2)
+        return self.conv2(torch.cat((x, x1, x2, x3), dim=1))
+
+
+class YoloV5(nn.Module):
     def __init__(self):
-        super(CSPWithConv, self).__init__()
+        super(YoloV5, self).__init__()
         pass
 
     def forward(self, x):
         pass
-

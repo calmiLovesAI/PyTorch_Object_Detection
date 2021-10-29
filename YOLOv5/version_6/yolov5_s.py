@@ -75,8 +75,8 @@ class YoloV5(nn.Module):
         x = self.c3_8(x)
         o3 = x
 
-        o1 = self._reshape(self.final_convs(o1))
-        o2 = self._reshape(self.final_convs(o2))
-        o3 = self._reshape(self.final_convs(o3))
+        o1 = self._reshape(self.final_convs[0](o1))
+        o2 = self._reshape(self.final_convs[1](o2))
+        o3 = self._reshape(self.final_convs[2](o3))
 
         return o1, o2, o3

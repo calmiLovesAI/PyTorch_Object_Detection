@@ -1,11 +1,10 @@
 import os
 
 import torch
-import yaml
 import time
 
-from YOLOv3.check import check_cfg
 from YOLOv3.inference import test_pipeline
+from YOLOv3.load_yaml import load_yaml
 from YOLOv3.model import YoloV3
 from datetime import datetime
 
@@ -27,10 +26,7 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("PyTorch version: {}, Device: {}".format(torch.__version__, device))
 
-    with open(file="experiments/yolov3.yaml") as f:
-        cfg = yaml.load(f.read(), Loader=yaml.FullLoader)
-
-    check_cfg(cfg)
+    cfg = load_yaml()
 
     model = YoloV3(cfg["Model"]["num_classes"])
     model.to(device=device)

@@ -4,9 +4,9 @@ import torch.nn as nn
 from YOLOv5.modules import ConvBnAct, C3, SPPF
 
 
-class YoloV5(nn.Module):
+class YoloV5S(nn.Module):
     def __init__(self, num_classes, anchors):
-        super(YoloV5, self).__init__()
+        super(YoloV5S, self).__init__()
         self.num_classes = num_classes
         self.num_anchors = len(anchors[0]) // 2
 

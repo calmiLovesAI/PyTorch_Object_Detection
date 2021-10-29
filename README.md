@@ -33,3 +33,4 @@ YOLOv3, YOLOv4, YOLOv5, YOLOX的PyTorch实现。（持续更新中......）
 # References
 - https://github.com/hunglc007/tensorflow-yolov4-tflite
 - https://github.com/amdegroot/ssd.pytorch code for processing COCO dataset
+- https://github.com/ultralytics/yolov5

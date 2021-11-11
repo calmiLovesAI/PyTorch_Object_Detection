@@ -1,8 +1,9 @@
 import torch
+import torch.nn.functional as F
 
 from YOLOv4.anchor import get_anchor
 from YOLOv4.inference import encode_outputs
-from utils.iou import box_iou_xywh
+from utils.iou import box_iou_xywh, box_ciou_xywh
 
 
 def make_label(cfg, target):
@@ -64,10 +65,19 @@ class YoloLoss:
         self.strides = cfg["Model"]["yolo_strides"]
         self.ignore_threshold = cfg["Loss"]["ignore_threshold"]
 
+    @staticmethod
+    def __tensor_or(x, dim):
+        x = x.to(torch.float32)
+        max_value, _ = torch.max(x, dim=dim)
+        y = max_value.to(torch.bool)
+        return y
+
     def __call__(self, pred, target):
-        ciou_loss = 0
-        conf_loss = 0
-        prob_loss = 0
+        batch_size = pred.size()[0]
+        total_loss = 0
+        batch_ciou_loss = 0
+        batch_conf_loss = 0
+        batch_prob_loss = 0
         for i in range(3):
             label = target[i]
             feature = pred[i]
@@ -85,5 +95,32 @@ class YoloLoss:
             pred_xywh = pred_bbox[..., 0:4]
 
             bbox_loss_scale = 2.0 - label_xywh[..., 2:3] * label_xywh[..., 3:4]
-            ciou = torch.unsqueeze(CIoU(box_1=pred_xywh, box_2=label_xywh).calculate_ciou(), dim=-1)
+            ciou = torch.unsqueeze(box_ciou_xywh(boxes1=pred_xywh, boxes2=label_xywh), dim=-1)
             ciou_loss = label_conf * bbox_loss_scale * (1 - ciou)
+
+            iou_over_threshold_mask = torch.zeros(N, H, W, 3, dtype=torch.float32, device=self.device)
+            for b in range(N):
+                true_bboxes = label_xywh[b][label_conf[b][..., 0] != 0.0]
+                if true_bboxes.size()[0]:
+                    pred_xywh_b = torch.unsqueeze(pred_xywh[b], dim=3)
+                    for _ in range(3):
+                        true_bboxes = torch.unsqueeze(true_bboxes, dim=0)
+                    iou = box_iou_xywh(pred_xywh_b, true_bboxes)
+                    iou_mask = torch.gt(iou, self.ignore_threshold)
+                    iou_mask = YoloLoss.__tensor_or(iou_mask, dim=-1)
+                    iou_over_threshold_mask[b][iou_mask] = 1.0
+            negative_mask = torch.lt(label_conf, 0.5)
+            iou_over_threshold_mask = torch.unsqueeze(iou_over_threshold_mask, dim=-1)
+            ignore_mask = torch.logical_and(negative_mask, iou_over_threshold_mask)
+
+            conf_loss = (label_conf * F.binary_cross_entropy_with_logits(input=raw_conf, target=label_conf,
+                                                                         reduction="none") + (1 - label_conf) * F.binary_cross_entropy_with_logits(input=raw_conf, target=label_conf,reduction="none")) * torch.logical_not(ignore_mask)
+            prob_loss = label_conf * F.binary_cross_entropy_with_logits(input=raw_prob, target=label_prob,
+                                                                        reduction="none")
+
+            batch_ciou_loss += torch.sum(ciou_loss) / batch_size
+            batch_conf_loss += torch.sum(conf_loss) / batch_size
+            batch_prob_loss += torch.sum(prob_loss) / batch_size
+            total_loss += (batch_ciou_loss + batch_conf_loss + batch_prob_loss)
+
+        return total_loss, batch_ciou_loss, batch_conf_loss, batch_prob_loss

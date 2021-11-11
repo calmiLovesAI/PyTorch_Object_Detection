@@ -24,7 +24,6 @@ def encode_outputs(cfg, feature, feature_index):
     anchors = get_anchor(cfg)
 
     shape = feature.size()
-    # feature = torch.reshape(feature, (shape[0], shape[1], shape[2], 3, -1))
     dx_dy, dw_dh, conf, prob = torch.split(feature, [2, 2, 1, cfg["Train"]["num_classes"]], -1)
 
     xy_grid = meshgrid(size=shape[1:3], B=shape[0], device=cfg["device"])

@@ -4,7 +4,7 @@ import cv2
 from YOLOv3.anchor import get_anchor
 from YOLOv3.nms import apply_nms
 from draw import Draw
-from utils import letter_box, reverse_letter_box
+from utils.tools import letter_box, reverse_letter_box
 from torchvision.transforms.functional import to_tensor
 
 

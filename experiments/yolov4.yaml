@@ -1,0 +1,16 @@
+Tain:
+  epochs: 100
+  batch_size: 8
+  learning_rate: 0.001
+  input_size: 608
+  # "voc" or "coco"
+  dataset_name: "voc"
+  max_num_boxes: 20
+Model:
+  num_classes: 20
+  yolo_strides: [8, 16, 32]
+Anchor:
+  voc_anchors: []
+  coco_anchors: [12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401]
+Loss:
+  ignore_threshold: 0.5

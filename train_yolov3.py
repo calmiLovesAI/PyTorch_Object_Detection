@@ -6,7 +6,7 @@ from YOLOv3.dataloader import build_train_loader
 from YOLOv3.load_yaml import load_yaml
 from YOLOv3.loss import make_label, YoloLoss
 from YOLOv3.model import YoloV3
-from utils import MeanMetric
+from utils.tools import MeanMetric
 from test_yolov3 import detect
 
 from torch.utils.tensorboard import SummaryWriter

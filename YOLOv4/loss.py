@@ -24,18 +24,18 @@ def make_label(cfg, target):
         true_boxes = target[i]
         true_boxes = true_boxes[true_boxes[..., -1] != -1]
         for n in range(true_boxes.size()[0]):
-            box_xyxy = true_boxes[i, :4]
+            box_xyxy = true_boxes[n, :4]
             box_xywh = torch.cat(tensors=((box_xyxy[:2] + box_xyxy[2:]) * 0.5, box_xyxy[2:] - box_xyxy[:2]), dim=-1)
             scaled_box_xywh = torch.unsqueeze(box_xywh, dim=0) * input_size / torch.unsqueeze(strides,
                                                                                               dim=1)  # shape : (3, 4)
-            box_class = true_boxes[i, 4].to(dtype=torch.int32)
+            box_class = true_boxes[n, 4].to(dtype=torch.int32)
             one_hot = torch.zeros(num_classes, dtype=torch.float32, device=device)
             one_hot[box_class] = 1.0
 
             iou_list = []
             for j in range(3):
                 anchors_xywh = torch.zeros(3, 4, dtype=torch.float32, device=device)
-                anchors_xywh[:, 2:4] = anchors[j] / output_feature_sizes[j]
+                anchors_xywh[:, 2:4] = anchors[j] / strides[j]
 
                 zero_xy_scaled_box = torch.zeros(3, 4, dtype=torch.float32, device=device)
                 zero_xy_scaled_box[:, 2:4] = scaled_box_xywh[:, 2:4]
@@ -46,7 +46,7 @@ def make_label(cfg, target):
             iou_tensor = torch.stack(tensors=iou_list, dim=0)  # shape: (3, 3)
             best_anchor_ind = torch.argmax(iou_tensor.reshape(-1), dim=-1)
 
-            level_idx = best_anchor_ind // 3
+            level_idx = torch.div(best_anchor_ind, 3, rounding_mode="floor")
             anchor_idx = best_anchor_ind % 3
 
             x_ind, y_ind = torch.floor(scaled_box_xywh[level_idx, 0:2]).to(torch.int32)
@@ -73,7 +73,7 @@ class YoloLoss:
         return y
 
     def __call__(self, pred, target):
-        batch_size = pred.size()[0]
+        batch_size = pred[0].size()[0]
         total_loss = 0
         batch_ciou_loss = 0
         batch_conf_loss = 0

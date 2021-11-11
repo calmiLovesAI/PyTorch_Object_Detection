@@ -30,9 +30,9 @@ def box_iou_xywh(boxes1, boxes2):
     :return:
     """
     return box_iou(
-        boxes1=torch.cat(tensors=(boxes1[:, 0:2] - 0.5 * boxes1[:, 2:4], boxes1[:, 0:2] + 0.5 * boxes1[:, 2:4]),
+        boxes1=torch.cat(tensors=(boxes1[..., 0:2] - 0.5 * boxes1[..., 2:4], boxes1[..., 0:2] + 0.5 * boxes1[..., 2:4]),
                          dim=-1),
-        boxes2=torch.cat(tensors=(boxes2[:, 0:2] - 0.5 * boxes2[:, 2:4], boxes2[:, 0:2] + 0.5 * boxes2[:, 2:4]),
+        boxes2=torch.cat(tensors=(boxes2[..., 0:2] - 0.5 * boxes2[..., 2:4], boxes2[..., 0:2] + 0.5 * boxes2[..., 2:4]),
                          dim=-1))
 
 
@@ -75,7 +75,7 @@ def box_ciou_xywh(boxes1, boxes2):
     :return:
     """
     return box_ciou(
-        boxes1=torch.cat(tensors=(boxes1[:, 0:2] - 0.5 * boxes1[:, 2:4], boxes1[:, 0:2] + 0.5 * boxes1[:, 2:4]),
+        boxes1=torch.cat(tensors=(boxes1[..., 0:2] - 0.5 * boxes1[..., 2:4], boxes1[..., 0:2] + 0.5 * boxes1[..., 2:4]),
                          dim=-1),
-        boxes2=torch.cat(tensors=(boxes2[:, 0:2] - 0.5 * boxes2[:, 2:4], boxes2[:, 0:2] + 0.5 * boxes2[:, 2:4]),
+        boxes2=torch.cat(tensors=(boxes2[..., 0:2] - 0.5 * boxes2[..., 2:4], boxes2[..., 0:2] + 0.5 * boxes2[..., 2:4]),
                          dim=-1))

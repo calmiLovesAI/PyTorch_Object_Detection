@@ -43,7 +43,8 @@ if __name__ == '__main__':
             start_time = time.time()
 
             images = img.to(device=device)
-            labels = make_label(cfg, [x.to(device=device) for x in tar])
+            tar = tar.to(device=device)
+            labels = make_label(cfg, tar)
 
             optimizer.zero_grad()
             preds = model(images)
@@ -73,4 +74,4 @@ if __name__ == '__main__':
         loc_loss_mean.reset()
         conf_loss_mean.reset()
         prob_loss_mean.reset()
-        
+

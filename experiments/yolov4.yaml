@@ -2,9 +2,9 @@ Train:
   epochs: 100
   batch_size: 2
   learning_rate: 0.001
-  input_size: 608
+  input_size: 416
   # "voc" or "coco"
-  dataset_name: "coco"
+  dataset_name: "voc"
   max_num_boxes: 20
   save_path: "./saved_model/"
   save_frequency: 1
@@ -18,7 +18,7 @@ Train:
   video_save_dir: ""
   save_video: True
 Model:
-  num_classes: 80
+  num_classes: 20
   yolo_strides: [8, 16, 32]
   scale: [1.2, 1.1, 1.05]
 Anchor:

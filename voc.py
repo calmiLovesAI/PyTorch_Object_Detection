@@ -54,4 +54,7 @@ class Voc(Dataset):
             box_class_list.append(o_list)
         return image_path, box_class_list
 
+    def gather_wh(self):
+        pass
+
 

@@ -72,9 +72,9 @@ def box_ciou(boxes1, boxes2):
     :return:
     """
 
-    box_1_xywh = torch.cat(tensors=((boxes1[..., 0::2] + boxes1[..., 1::2]) / 2, boxes1[..., 1::2] - boxes1[..., 0::2]),
+    box_1_xywh = torch.cat(tensors=((boxes1[..., 0:2] + boxes1[..., 2:4]) / 2, boxes1[..., 2:4] - boxes1[..., 0:2]),
                            dim=-1)
-    box_2_xywh = torch.cat(tensors=((boxes2[..., 0::2] + boxes2[..., 1::2]) / 2, boxes2[..., 1::2] - boxes2[..., 0::2]),
+    box_2_xywh = torch.cat(tensors=((boxes2[..., 0:2] + boxes2[..., 2:4]) / 2, boxes2[..., 2:4] - boxes2[..., 0:2]),
                            dim=-1)
 
     iou = box_iou(boxes1, boxes2)

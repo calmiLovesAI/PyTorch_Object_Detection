@@ -69,8 +69,8 @@ def test_pipeline(cfg, model, image_path, device, save_dir=None, print_on=True, 
     image = to_tensor(image)
     image = torch.unsqueeze(image, dim=0)
     image = image.to(device=device)
-    outputs = model(image)
     with torch.no_grad():
+        outputs = model(image)
         boxes, scores, classes = Inference(cfg=cfg, outputs=outputs, input_image_shape=(h, w), device=device).get_results()
     boxes = boxes.cpu().numpy()
     scores = scores.cpu().numpy()

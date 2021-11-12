@@ -36,3 +36,6 @@ def encode_outputs(cfg, feature, feature_index):
     pred_bbox = torch.cat(tensors=(pred_xywh, pred_conf, pred_prob), dim=-1)
 
     return pred_bbox
+
+
+class Decode:

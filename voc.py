@@ -53,8 +53,3 @@ class Voc(Dataset):
             o_list.append(self.class_index[obj_name])
             box_class_list.append(o_list)
         return image_path, box_class_list
-
-    def gather_wh(self):
-        pass
-
-

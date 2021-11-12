@@ -24,7 +24,7 @@ def reverse_letter_box(h, w, input_size, boxes):
     :param w: 输入网络的图片的原始宽度
     :param input_size: 网络的固定输入图片大小
     :param boxes: Tensor, shape: (..., 4(cx, cy, w, h))
-    :return:
+    :return: Tensor, shape: (..., 4(xmin, ymin, xmax, ymax))
     """
     # 转换为(xmin, ymin, xmax, ymax)格式
     new_boxes = torch.cat((boxes[..., 0:2] - boxes[..., 2:4] / 2, boxes[..., 0:2] + boxes[..., 2:4] / 2), dim=-1)

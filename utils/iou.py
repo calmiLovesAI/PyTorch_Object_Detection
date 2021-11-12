@@ -2,7 +2,7 @@ import math
 
 import torch
 
-eps = 1e-9
+eps = 1e-6
 
 
 def box_iou(boxes1, boxes2):
@@ -45,9 +45,9 @@ def box_diou(boxes1, boxes2):
     :param boxes2: Tensor, shape: (..., 4 (xmin, ymin, xmax, ymax))
     :return:
     """
-    box_1_xywh = torch.cat(tensors=((boxes1[..., 0::2] + boxes1[..., 1::2]) / 2, boxes1[..., 1::2] - boxes1[..., 0::2]),
+    box_1_xywh = torch.cat(tensors=((boxes1[..., 0:2] + boxes1[..., 2:4]) / 2, boxes1[..., 2:4] - boxes1[..., 0:2]),
                            dim=-1)
-    box_2_xywh = torch.cat(tensors=((boxes2[..., 0::2] + boxes2[..., 1::2]) / 2, boxes2[..., 1::2] - boxes2[..., 0::2]),
+    box_2_xywh = torch.cat(tensors=((boxes2[..., 0:2] + boxes2[..., 2:4]) / 2, boxes2[..., 2:4] - boxes2[..., 0:2]),
                            dim=-1)
 
     iou = box_iou(boxes1, boxes2)

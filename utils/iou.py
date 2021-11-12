@@ -18,7 +18,7 @@ def box_iou(boxes1, boxes2):
     intersect_wh = torch.clamp(intersect_wh, min=0)
     intersect_area = intersect_wh[..., 0] * intersect_wh[..., 1]
     union_area = box_1_area + box_2_area - intersect_area
-    iou = intersect_area / union_area
+    iou = intersect_area / torch.clamp(union_area, min=1e-6)
     return iou
 
 
@@ -60,10 +60,10 @@ def box_ciou(boxes1, boxes2):
     d_square = torch.sum(torch.pow(box_1_xywh[..., 0:2] - box_2_xywh[..., 0:2], 2), dim=-1)  # 中心点之间的距离的平方
 
     v = (4.0 / math.pi ** 2) * torch.pow(
-        torch.atan(box_2_xywh[..., 2] / box_2_xywh[..., 3]) - torch.atan(box_1_xywh[..., 2] / box_1_xywh[..., 3]), 2)
-    alpha = v / (1.0 - iou + v)
+        torch.atan(box_2_xywh[..., 2] / torch.clamp(box_2_xywh[..., 3], min=1e-6)) - torch.atan(box_1_xywh[..., 2] / torch.clamp(box_1_xywh[..., 3], min=1e-6)), 2)
+    alpha = v / torch.clamp(1.0 - iou + v, min=1e-6)
 
-    ciou = iou - d_square / enclose_c_square - alpha * v
+    ciou = iou - d_square / torch.clamp(enclose_c_square, min=1e-6) - alpha * v
     return ciou
 
 

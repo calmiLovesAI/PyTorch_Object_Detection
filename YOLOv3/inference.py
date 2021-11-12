@@ -70,10 +70,11 @@ def test_pipeline(cfg, model, image_path, device, save_dir=None, print_on=True, 
     image = torch.unsqueeze(image, dim=0)
     image = image.to(device=device)
     outputs = model(image)
-    boxes, scores, classes = Inference(cfg=cfg, outputs=outputs, input_image_shape=(h, w), device=device).get_results()
-    boxes = boxes.cpu().detach().numpy()
-    scores = scores.cpu().detach().numpy()
-    classes = classes.cpu().detach().numpy()
+    with torch.no_grad():
+        boxes, scores, classes = Inference(cfg=cfg, outputs=outputs, input_image_shape=(h, w), device=device).get_results()
+    boxes = boxes.cpu().numpy()
+    scores = scores.cpu().numpy()
+    classes = classes.cpu().numpy()
     if print_on:
         print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
         print("boxes: ", boxes)

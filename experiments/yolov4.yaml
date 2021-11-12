@@ -7,7 +7,7 @@ Train:
   dataset_name: "coco"
   max_num_boxes: 20
   save_path: "./saved_model/"
-  save_frequency: 5
+  save_frequency: 1
   test_during_training: True
   load_weights: False
   resume_training_from_epoch: 0

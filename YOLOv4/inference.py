@@ -1,8 +1,11 @@
 import torch
+import cv2
+from torchvision.transforms.functional import to_tensor
 
 from YOLOv4.anchor import get_anchor
+from draw import Draw
 from utils.nms import diou_nms
-from utils.tools import reverse_letter_box
+from utils.tools import reverse_letter_box, letter_box
 
 
 def meshgrid(size, B, device):
@@ -107,3 +110,32 @@ class Decode:
         return boxes_tensor, scores_tensor, classes_tensor
 
 
+def test_pipeline(cfg, model, image_path, save_dir=None, print_on=True, save_result=True):
+    image = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    h, w, c = image.shape
+    image, _, _ = letter_box(image, (cfg["Train"]["input_size"], cfg["Train"]["input_size"]))
+    image = to_tensor(image)
+    image = torch.unsqueeze(image, dim=0)
+    image = image.to(device=cfg["device"])
+    with torch.no_grad():
+        outputs = model(image)
+        decoder = Decode(cfg, image_size=(h, w))
+        boxes, scores, classes = decoder(outputs)
+    boxes = boxes.cpu().numpy()
+    scores = scores.cpu().numpy()
+    classes = classes.cpu().numpy()
+    if print_on:
+        print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
+        print("boxes: ", boxes)
+        print("scores: ", scores)
+        print("classes: ", classes)
+
+    painter = Draw(cfg)
+    image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
+
+    if save_result:
+        # 保存检测结果
+        cv2.imwrite(save_dir, image_with_boxes)
+    else:
+        return image_with_boxes

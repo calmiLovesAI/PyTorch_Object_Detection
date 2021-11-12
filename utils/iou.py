@@ -2,7 +2,7 @@ import math
 
 import torch
 
-eps = 1e-9
+eps = 1e-6
 
 
 def box_iou(boxes1, boxes2):

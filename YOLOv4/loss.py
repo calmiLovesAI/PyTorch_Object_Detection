@@ -22,7 +22,8 @@ def make_label(cfg, target):
 
     for i in range(batch_size):
         true_boxes = target[i]
-        true_boxes = true_boxes[true_boxes[..., -1] != -1]
+        valid_boxes_mask = torch.logical_and(true_boxes[..., 0] < true_boxes[..., 2], true_boxes[..., 1] < true_boxes[..., 3])
+        true_boxes = true_boxes[valid_boxes_mask]
         for n in range(true_boxes.size()[0]):
             box_xyxy = true_boxes[n, :4]
             box_xywh = torch.cat(tensors=((box_xyxy[:2] + box_xyxy[2:]) * 0.5, box_xyxy[2:] - box_xyxy[:2]), dim=-1)

@@ -1,6 +1,6 @@
 Train:
   epochs: 100
-  batch_size: 8
+  batch_size: 2
   learning_rate: 0.001
   input_size: 608
   # "voc" or "coco"

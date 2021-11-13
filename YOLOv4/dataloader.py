@@ -1,4 +1,4 @@
-import YOLOv4.transforms as T
+import public_transforms as T
 from voc import Voc
 from coco import Coco
 from torch.utils.data import DataLoader

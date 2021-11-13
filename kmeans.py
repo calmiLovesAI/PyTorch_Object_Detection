@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import yaml
 
-import YOLOv3.transforms as T
+import public_transforms as T
 
 from tqdm import tqdm
 from voc import Voc

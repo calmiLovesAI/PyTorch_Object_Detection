@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import cv2
 
@@ -74,6 +75,7 @@ def test_pipeline(cfg, model, image_path, device, save_dir=None, print_on=True, 
         boxes, scores, classes = Inference(cfg=cfg, outputs=outputs, input_image_shape=(h, w), device=device).get_results()
     boxes = boxes.cpu().numpy()
     scores = scores.cpu().numpy()
+    scores = np.squeeze(scores)
     classes = classes.cpu().numpy()
     if print_on:
         print("检测出{}个边界框，分别是：".format(boxes.shape[0]))

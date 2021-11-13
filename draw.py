@@ -54,7 +54,7 @@ class Draw:
 
         num_boxes = boxes.shape[0]
         for i in range(num_boxes):
-            class_and_score = str(self._find_class_name(classes[i])) + ": {:.2f}".format(scores[i][0])
+            class_and_score = str(self._find_class_name(classes[i])) + ": {:.2f}".format(scores[i])
             # 获取类别对应的颜色
             bbox_color = self._get_rgb_color(classes[i])
             bbox_color_bgr = bbox_color[::-1]

@@ -22,7 +22,8 @@ def make_label(cfg, target):
 
     for i in range(batch_size):
         true_boxes = target[i]
-        valid_boxes_mask = torch.logical_and(true_boxes[..., 0] < true_boxes[..., 2], true_boxes[..., 1] < true_boxes[..., 3])
+        valid_boxes_mask = torch.logical_and(true_boxes[..., 0] < true_boxes[..., 2],
+                                             true_boxes[..., 1] < true_boxes[..., 3])
         true_boxes = true_boxes[valid_boxes_mask]
         for n in range(true_boxes.size()[0]):
             box_xyxy = true_boxes[n, :4]
@@ -34,12 +35,11 @@ def make_label(cfg, target):
             one_hot[box_class] = 1.0
 
             iou_list = []
+            zero_xy_scaled_box = torch.zeros(3, 4, dtype=torch.float32, device=device)
+            zero_xy_scaled_box[:, 2:4] = scaled_box_xywh[:, 2:4]
             for j in range(3):
                 anchors_xywh = torch.zeros(3, 4, dtype=torch.float32, device=device)
                 anchors_xywh[:, 2:4] = anchors[j] / strides[j]
-
-                zero_xy_scaled_box = torch.zeros(3, 4, dtype=torch.float32, device=device)
-                zero_xy_scaled_box[:, 2:4] = scaled_box_xywh[:, 2:4]
 
                 iou = box_iou_xywh(boxes1=zero_xy_scaled_box[j], boxes2=anchors_xywh)
                 iou_list.append(iou)
@@ -115,7 +115,11 @@ class YoloLoss:
             ignore_mask = torch.logical_and(negative_mask, iou_over_threshold_mask)
 
             conf_loss = (label_conf * F.binary_cross_entropy_with_logits(input=raw_conf, target=label_conf,
-                                                                         reduction="none") + (1 - label_conf) * F.binary_cross_entropy_with_logits(input=raw_conf, target=label_conf,reduction="none")) * torch.logical_not(ignore_mask)
+                                                                         reduction="none") + (
+                                     1 - label_conf) * F.binary_cross_entropy_with_logits(input=raw_conf,
+                                                                                          target=label_conf,
+                                                                                          reduction="none")) * torch.logical_not(
+                ignore_mask)
             prob_loss = label_conf * F.binary_cross_entropy_with_logits(input=raw_prob, target=label_prob,
                                                                         reduction="none")
 

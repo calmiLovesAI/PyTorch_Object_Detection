@@ -11,7 +11,7 @@ from utils.tools import reverse_letter_box, letter_box
 def meshgrid(size, B, device):
     x = torch.arange(start=0, end=size[1], dtype=torch.float32, device=device)
     y = torch.arange(start=0, end=size[0], dtype=torch.float32, device=device)
-    x, y = torch.meshgrid([x, y], indexing="ij")
+    x, y = torch.meshgrid([x, y], indexing="xy")
     xy_grid = torch.stack(tensors=(y, x), dim=-1)
     xy_grid = torch.unsqueeze(xy_grid, dim=2)
     xy_grid = torch.unsqueeze(xy_grid, dim=0)

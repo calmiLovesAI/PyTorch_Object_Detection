@@ -50,7 +50,7 @@ def make_label(cfg, target):
             level_idx = torch.div(best_anchor_ind, 3, rounding_mode="floor")
             anchor_idx = best_anchor_ind % 3
 
-            x_ind, y_ind = torch.floor(scaled_box_xywh[level_idx, 0:2]).to(torch.int32)
+            x_ind, y_ind = torch.floor(scaled_box_xywh[level_idx, 0:2]).to(dtype=torch.int32)
             batch_labels[level_idx][i, y_ind, x_ind, anchor_idx, :] = 0
             batch_labels[level_idx][i, y_ind, x_ind, anchor_idx, 0:4] = box_xywh
             batch_labels[level_idx][i, y_ind, x_ind, anchor_idx, 4:5] = 1.0

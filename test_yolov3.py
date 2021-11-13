@@ -4,9 +4,10 @@ import torch
 import time
 
 from YOLOv3.inference import test_pipeline
-from YOLOv3.load_yaml import load_yaml
 from YOLOv3.model import YoloV3
 from datetime import datetime
+
+from load_yaml import load_yamls
 
 
 def get_time_format():
@@ -26,7 +27,7 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("PyTorch version: {}, Device: {}".format(torch.__version__, device))
 
-    cfg = load_yaml()
+    cfg = load_yamls(model_yaml="yolov3.yaml")
 
     model = YoloV3(cfg["Model"]["num_classes"])
     model.to(device=device)

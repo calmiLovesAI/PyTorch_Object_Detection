@@ -3,7 +3,7 @@ import os
 import time
 
 from YOLOv4.inference import test_pipeline
-from YOLOv4.load_yaml import load_yaml
+from load_yaml import load_yamls
 from YOLOv4.model import YOLOv4
 from datetime import datetime
 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("PyTorch version: {}, Device: {}".format(torch.__version__, device))
 
-    cfg = load_yaml(device)
+    cfg = load_yamls(model_yaml="yolov4.yaml", device=device)
 
     model = YOLOv4(cfg["Model"]["num_classes"])
     model.to(device=device)

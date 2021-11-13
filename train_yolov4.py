@@ -4,7 +4,7 @@ from pathlib import Path
 import torch
 
 from YOLOv4.dataloader import build_train_loader
-from YOLOv4.load_yaml import load_yaml
+from load_yaml import load_yamls
 from YOLOv4.loss import YoloLoss, make_label
 from YOLOv4.model import YOLOv4
 from test_yolov4 import detect
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("PyTorch version: {}, Device: {}".format(torch.__version__, device))
 
-    cfg = load_yaml(device)
+    cfg = load_yamls(model_yaml="yolov4.yaml", device=device)
 
     # 一些训练超参数
     epochs = cfg["Train"]["epochs"]

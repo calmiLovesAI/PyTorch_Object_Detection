@@ -1,4 +1,20 @@
 import yaml
+from pathlib import Path
+
+
+def load_yaml(file):
+    with open(file=file) as f:
+        return yaml.load(f.read(), Loader=yaml.FullLoader)
+
+
+def load_yamls(model_yaml, device=None):
+    cfg = load_yaml(Path("./experiments").joinpath(model_yaml))
+    if device:
+        cfg["device"] = device
+    cfg["VOC"] = load_yaml(Path("./experiments").joinpath("VOC.yaml"))
+    cfg["COCO"] = load_yaml(Path("./experiments").joinpath("COCO.yaml"))
+    check_cfg(cfg)
+    return cfg
 
 
 def check_cfg(cfg):
@@ -11,18 +27,3 @@ def check_cfg(cfg):
         assert cfg["COCO"]["num_classes"] == len(cfg["COCO"]["classes"])
     else:
         raise ValueError("参数cfg->Train->dataset_name错误")
-
-
-def load_yaml(device):
-    with open(file="experiments/yolov4.yaml") as f:
-        cfg = yaml.load(f.read(), Loader=yaml.FullLoader)
-    with open(file="experiments/VOC.yaml") as f:
-        voc_cfg = yaml.load(f.read(), Loader=yaml.FullLoader)
-    with open(file="experiments/COCO.yaml") as f:
-        coco_cfg = yaml.load(f.read(), Loader=yaml.FullLoader)
-    cfg["VOC"] = voc_cfg
-    cfg["COCO"] = coco_cfg
-    check_cfg(cfg)
-    cfg["device"] = device
-
-    return cfg

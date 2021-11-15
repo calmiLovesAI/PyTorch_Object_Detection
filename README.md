@@ -16,7 +16,7 @@ YOLOv3, YOLOv4, YOLOv5, YOLOX的PyTorch实现。（持续更新中......）
 # TODO list
 1. 训练和测试代码
 - [x] Yolo_v3
-- [ ] Yolo_v4
+- [x] Yolo_v4
 - [ ] Yolo_v5
 - [ ] Yolo_x
 2. 发布在COCO数据集上训练好的模型

@@ -14,7 +14,7 @@ class Coco(Dataset):
         self.transform = transform
 
         coco_root = cfg["root"]
-        self.images_root = os.path.join(coco_root, "train2017")
+        self.images_root = os.path.join(coco_root, "images", "train2017")
         anno_file = os.path.join(coco_root, "annotations", "instances_train2017.json")
         self.coco = COCO(annotation_file=anno_file)
         self.ids = list(self.coco.imgToAnns.keys())  # 图片id列表

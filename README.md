@@ -18,13 +18,13 @@ YOLOv3, YOLOv4, YOLOv5, YOLOX的PyTorch实现。（持续更新中......）
 - [x] Yolo_v3
 - [x] Yolo_v4
 - [ ] Yolo_v5
-- [ ] Yolo_x
+- [ ] Yolo_X
 - [ ] CenterNet
 2. 发布在COCO数据集上训练好的模型
 - [ ] Yolo_v3
 - [ ] Yolo_v4
 - [ ] Yolo_v5
-- [ ] Yolo_x
+- [ ] Yolo_X
 - [ ] CenterNet
 
 # References

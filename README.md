@@ -33,3 +33,4 @@ YOLOv3, YOLOv4, YOLOv5, YOLOX的PyTorch实现。（持续更新中......）
 - https://github.com/ultralytics/yolov5
 - https://github.com/calmisential/YOLOv4_PyTorch
 - https://github.com/calmisential/CenterNet_TensorFlow2
+- https://github.com/xingyizhou/CenterNet

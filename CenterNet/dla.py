@@ -233,6 +233,51 @@ class DLA(nn.Module):
             return x
 
 
+class Identity(nn.Module):
+    def __init__(self):
+        super(Identity, self).__init__()
+
+    def forward(self, x):
+        return x
+
+
+class IDAUp(nn.Module):
+    def __init__(self, in_dim, node_kernel, out_dim, channels, up_factors):
+        super(IDAUp, self).__init__()
+        self.channels = channels
+        self.out_dim = out_dim
+        for i, c in enumerate(channels):
+            if c == out_dim:
+                proj = Identity()
+            else:
+                proj = nn.Sequential(
+                    nn.Conv2d(in_channels=in_dim,
+                              out_channels=out_dim,
+                              kernel_size=(1, 1),
+                              stride=(1, 1),
+                              padding=0,
+                              bias=False),
+                    nn.BatchNorm2d(num_features=out_dim),
+                    nn.ReLU()
+                )
+            f = int(up_factors[i])
+            if f == 1:
+                up = Identity()
+            else:
+                up = nn.ConvTranspose2d(in_channels=out_dim, out_channels=out_dim, kernel_size=f*2, stride=f, padding=f, output_padding=f, groups=out_dim, bias=False)
+            setattr(self, "proj_" + str(i), proj)
+            setattr(self, "up_" + str(i), up)
+        for i in range(1, len(channels)):
+            node = nn.Sequential(
+                nn.Conv2d(in_channels=(f+1)*out_dim, out_channels=out_dim, kernel_size=node_kernel, strides=1, padding=same_pad(node_kernel, 1), bias=False),
+                nn.BatchNorm2d(num_features=out_dim),
+                nn.ReLU()
+            )
+            setattr(self, "node_" + str(i), node)
+
+    def forward(self, inputs):
+        pass
+
 
 # if __name__ == '__main__':
 #     sample = torch.randn(1, 3, 384, 384, dtype=torch.float32)

@@ -4,7 +4,7 @@ import torch.functional as F
 
 
 def same_pad(k, s):
-    return (k - s) / 2
+    return (k - s) // 2
 
 
 class ConvBnAct(nn.Module):

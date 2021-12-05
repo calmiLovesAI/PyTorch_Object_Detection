@@ -3,7 +3,7 @@ from pathlib import Path
 
 import torch
 
-from YOLOv4.dataloader import build_train_loader
+from YOLOv4.dataloader import TrainLoader
 from load_yaml import load_yamls
 from YOLOv4.loss import YoloLoss, make_label
 from YOLOv4.model import YOLOv4
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     resume_training_from_epoch = cfg["Train"]["resume_training_from_epoch"]
     tensorboard_on = cfg["Train"]["tensorboard_on"]  # 是否开启tensorboard
 
-    train_loader = build_train_loader(cfg)
+    train_loader = TrainLoader(cfg).__call__()
 
     model = YOLOv4(num_classes)
     model.to(device=device)

@@ -2,7 +2,7 @@ import torch
 import time
 
 from pathlib import Path
-from YOLOv3.dataloader import build_train_loader
+from YOLOv3.dataloader import TrainLoader
 from load_yaml import load_yamls
 from YOLOv3.loss import make_label, YoloLoss
 from YOLOv3.model import YoloV3
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     writer = SummaryWriter()
 
     # 数据集
-    train_loader = build_train_loader(cfg)
+    train_loader = TrainLoader(cfg).__call__()
 
     # 模型
     model = YoloV3(num_classes)

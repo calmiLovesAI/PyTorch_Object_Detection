@@ -1,23 +1,6 @@
-import public_transforms as T
-from voc import Voc
-from coco import Coco
-from torch.utils.data import DataLoader
+from dataset.public_dataloader import PublicTrainLoader
 
 
-def build_train_loader(cfg):
-    if cfg["Train"]["dataset_name"] == "voc":
-        dataset = Voc(cfg["VOC"], T.Compose(transforms=[
-            T.Resize(size=cfg["Train"]["input_size"]),
-            T.TargetPadding(max_num_boxes=cfg["Train"]["max_num_boxes"]),
-            T.ToTensor()
-        ]))
-
-    elif cfg["Train"]["dataset_name"] == "coco":
-        dataset = Coco(cfg["COCO"], T.Compose(transforms=[
-            T.Resize(size=cfg["Train"]["input_size"]),
-            T.TargetPadding(max_num_boxes=cfg["Train"]["max_num_boxes"]),
-            T.ToTensor()
-        ]))
-    else:
-        raise ValueError("参数cfg->Train->dataset_name错误")
-    return DataLoader(dataset=dataset, batch_size=cfg["Train"]["batch_size"], shuffle=True)
+class TrainLoader(PublicTrainLoader):
+    def __init__(self, cfg):
+        super(TrainLoader, self).__init__(cfg)

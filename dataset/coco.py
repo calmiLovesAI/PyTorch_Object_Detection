@@ -67,12 +67,3 @@ class Coco(Dataset):
             bboxes.append([*bbox, class_idx])
         return bboxes
 
-
-if __name__ == '__main__':
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print("PyTorch version: {}, Device: {}".format(torch.__version__, device))
-
-    with open(file="experiments/yolov3.yaml") as f:
-        cfg = yaml.load(f.read(), Loader=yaml.FullLoader)
-
-    coco_dataset = Coco(cfg["COCO"])

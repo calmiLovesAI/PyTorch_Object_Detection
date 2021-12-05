@@ -3,11 +3,11 @@ import torch
 import numpy as np
 import yaml
 
-import public_transforms as T
+from dataset import public_transforms as T
 
 from tqdm import tqdm
-from voc import Voc
-from coco import Coco
+from dataset.voc import Voc
+from dataset.coco import Coco
 from torch.utils.data import DataLoader
 
 # 配置文件

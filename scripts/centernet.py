@@ -5,8 +5,10 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from CenterNet.dataloader import TrainLoader
+from CenterNet.loss import CombinedLoss
 from CenterNet.model import CenterNet
 from CenterNet.target_generator import TargetGenerator
+from utils.tools import MeanMetric
 from .template import ITrainer
 
 
@@ -60,6 +62,10 @@ class CenterNetTrainer(ITrainer):
         self.set_train_dataloader()
         self.set_optimizer()
         self.set_lr_scheduler()
+        # 损失函数
+        criterion = CombinedLoss(self.cfg)
+        # metrics
+        loss_mean = MeanMetric()
         start_epoch = 0
         if self.load_weights:
             # 加载权重参数
@@ -79,9 +85,31 @@ class CenterNetTrainer(ITrainer):
                 labels = labels.to(device=self.device)
                 target = TargetGenerator(self.cfg, labels).__call__()
 
+                self.optimizer.zero_grad()
                 preds = self.model(images)
-                break
-            break
+                target.insert(0, preds)
+                loss = criterion(*target)
+                loss_mean.update(loss.item())
+                loss.backward()
+                self.optimizer.step()
+
+                print("Epoch: {}/{}, step: {}/{}, speed: {:.3f}s/step, loss: {}".format(epoch,
+                                                                          self.epochs,
+                                                                          i,
+                                                                          len(self.train_dataloader),
+                                                                          time.time() - start_time,
+                                                                          loss_mean.result(),
+                                                                          ))
+                if self.tensorboard_on:
+                    writer.add_scalar(tag="Loss", scalar_value=loss_mean.result(),
+                                      global_step=epoch * len(self.train_dataloader) + i)
+            self.scheduler.step(loss_mean.result())
+            loss_mean.reset()
+
+            if epoch % self.save_frequency == 0:
+                self.save(epoch=epoch)
+
+        self.save(epoch=self.epochs, save_entire_model=True)
 
     def test(self, *args, **kwargs):
         pass

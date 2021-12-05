@@ -37,7 +37,7 @@ class RegL1Loss:
     @staticmethod
     def _gather_feat(feat, ind):
         feat = torch.reshape(feat, shape=(feat.size()[0], -1, feat.size()[3]))
-        ind = torch.unsqueeze(ind, dim=2)
+        ind = ind.unsqueeze(2).to(torch.int64)
         ind = ind.expand(ind.size()[0], ind.size()[1], feat.size()[2])
         feat = torch.gather(feat, dim=1, index=ind)
         return feat

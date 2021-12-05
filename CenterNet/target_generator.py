@@ -41,7 +41,7 @@ class TargetGenerator:
         reg_mask = torch.zeros(self.max_num_boxes, dtype=torch.float32, device=self.device)
         ind = torch.zeros(self.max_num_boxes, dtype=torch.float32, device=self.device)
         for j, item in enumerate(label):
-            item[:4] = item[:4] / self.downsampling_ratio
+            item[:4] = item[:4] * self.input_size / self.downsampling_ratio
             xmin, ymin, xmax, ymax, class_id = item
             class_id = class_id.to(dtype=torch.int32)
             h, w = int(ymax - ymin), int(xmax - xmin)
@@ -50,9 +50,11 @@ class TargetGenerator:
             ctr_x, ctr_y = (xmin + xmax) / 2, (ymin + ymax) / 2
             center_point = torch.tensor([ctr_x, ctr_y], dtype=torch.float32)
             center_point_int = center_point.to(dtype=torch.int32)
-            masked_hm = draw_umich_gaussian(hm[:, :, class_id], center_point_int, radius)
+            _hm = draw_umich_gaussian(hm[:, :, class_id], center_point_int, radius)
+            hm[:, :, class_id] = torch.from_numpy(_hm).to(self.device)
+
             reg[j] = center_point - center_point_int
             wh[j] = torch.tensor(data=[w, h], dtype=torch.float32, device=self.device)
             reg_mask[j] = 1
             ind[j] = center_point_int[1] * self.features_shape[1] + center_point_int[0]
-        return masked_hm.to(self.device), reg, wh, reg_mask, ind
+        return hm, reg, wh, reg_mask, ind

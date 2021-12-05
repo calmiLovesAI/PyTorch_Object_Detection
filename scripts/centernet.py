@@ -66,7 +66,7 @@ class CenterNetTrainer(ITrainer):
         criterion = CombinedLoss(self.cfg)
         # metrics
         loss_mean = MeanMetric()
-        start_epoch = 0
+        start_epoch = -1
         if self.load_weights:
             # 加载权重参数
             self.load(weights_path=Path(self.save_path).joinpath(
@@ -83,7 +83,7 @@ class CenterNetTrainer(ITrainer):
 
                 images = images.to(device=self.device)
                 labels = labels.to(device=self.device)
-                target = TargetGenerator(self.cfg, labels).__call__()
+                target = list(TargetGenerator(self.cfg, labels).__call__())
 
                 self.optimizer.zero_grad()
                 preds = self.model(images)

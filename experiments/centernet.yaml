@@ -19,6 +19,8 @@ Train:
   save_video: True
 Model:
   num_classes: 20
+  # "dla": 4
+  downsampling_ratio: 4
   heads: {"heatmap": num_classes, "wh": 2, "reg": 2}
 Loss:
   hm_weight: 1.0

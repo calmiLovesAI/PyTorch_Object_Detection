@@ -73,7 +73,7 @@ class CenterNetTrainer(ITrainer):
                 "centernet_epoch_{}.pth".format(self.resume_training_from_epoch)))
             start_epoch = self.resume_training_from_epoch
         if self.tensorboard_on:
-            writer = SummaryWriter()  # 在控制台使用命令tensorboard --logdir=runs进入tensorboard面板
+            writer = SummaryWriter()  # 在控制台使用命令 tensorboard --logdir=runs 进入tensorboard面板
             writer.add_graph(self.model, torch.randn(self.batch_size, 3, self.input_size, self.input_size,
                                                      dtype=torch.float32, device=self.device))
         for epoch in range(start_epoch + 1, self.epochs):

@@ -52,7 +52,7 @@ class TargetGenerator:
             center_point_int = center_point.to(dtype=torch.int32)
             masked_hm = draw_umich_gaussian(hm[:, :, class_id], center_point_int, radius)
             reg[j] = center_point - center_point_int
-            wh[j] = 1. * w, 1. * h
+            wh[j] = torch.tensor(data=[w, h], dtype=torch.float32, device=self.device)
             reg_mask[j] = 1
             ind[j] = center_point_int[1] * self.features_shape[1] + center_point_int[0]
         return masked_hm.to(self.device), reg, wh, reg_mask, ind

@@ -7,6 +7,10 @@ class ITrainer(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def set_train_dataloader(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
     def set_optimizer(self, *args, **kwargs):
         pass
 
@@ -24,4 +28,8 @@ class ITrainer(metaclass=ABCMeta):
 
     @abstractmethod
     def train(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def test(self, *args, **kwargs):
         pass

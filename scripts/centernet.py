@@ -31,12 +31,15 @@ class CenterNetTrainer(ITrainer):
         self.resume_training_from_epoch = cfg["Train"]["resume_training_from_epoch"]
         self.tensorboard_on = cfg["Train"]["tensorboard_on"]  # 是否开启tensorboard
 
-        # 训练集
-        self.train_dataloader = TrainLoader(cfg).__call__()
+        # 训练数据集
+        self.train_dataloader = None
 
     def set_model(self):
         self.model = CenterNet(self.cfg)
         self.model.to(device=self.device)
+
+    def set_train_dataloader(self, *args, **kwargs):
+        self.train_dataloader = TrainLoader(self.cfg).__call__()
 
     def set_optimizer(self):
         self.optimizer = torch.optim.Adam(params=self.model.parameters(), lr=self.learning_rate)
@@ -54,17 +57,19 @@ class CenterNetTrainer(ITrainer):
 
     def train(self, *args, **kwargs):
         self.set_model()
+        self.set_train_dataloader()
         self.set_optimizer()
         self.set_lr_scheduler()
         start_epoch = 0
         if self.load_weights:
             # 加载权重参数
-            self.load(weights_path=Path(self.save_path).joinpath("centernet_epoch_{}.pth".format(self.resume_training_from_epoch)))
+            self.load(weights_path=Path(self.save_path).joinpath(
+                "centernet_epoch_{}.pth".format(self.resume_training_from_epoch)))
             start_epoch = self.resume_training_from_epoch
         if self.tensorboard_on:
             writer = SummaryWriter()  # 在控制台使用命令tensorboard --logdir=runs进入tensorboard面板
             writer.add_graph(self.model, torch.randn(self.batch_size, 3, self.input_size, self.input_size,
-                                                dtype=torch.float32, device=self.device))
+                                                     dtype=torch.float32, device=self.device))
         for epoch in range(start_epoch + 1, self.epochs):
             self.model.train()
             for i, (images, labels) in enumerate(self.train_dataloader):
@@ -77,3 +82,6 @@ class CenterNetTrainer(ITrainer):
                 preds = self.model(images)
                 break
             break
+
+    def test(self, *args, **kwargs):
+        pass

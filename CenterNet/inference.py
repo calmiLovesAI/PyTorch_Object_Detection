@@ -31,3 +31,14 @@ class Decode:
         hmax = torch.nn.MaxPool2d(kernel_size=pool_size, stride=1, padding=(pool_size - 1) // 2)(heatmap)
         keep = torch.eq(heatmap, hmax).to(torch.float32)
         return hmax * keep
+
+    @staticmethod
+    def _top_k(scores, k):
+        B, H, W, C = scores.size()
+        scores = torch.reshape(scores, shape=(B, -1))
+        topk_scores, topk_inds = torch.topk(input=scores, k=k, largest=True, sorted=True)
+        topk_clses = topk_inds % C
+        topk_xs = (topk_inds // C % W).to(torch.float32)
+        topk_ys = (topk_inds // C // W).to(torch.float32)
+        topk_inds = (topk_ys * W + topk_xs).to(torch.int32)
+        return topk_scores, topk_inds, topk_clses, topk_ys, topk_xs

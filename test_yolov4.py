@@ -2,9 +2,9 @@ import torch
 import os
 import time
 
-from core.YOLOv4 import test_pipeline
+from core.YOLOv4.inference import test_pipeline
 from load_yaml import load_yamls
-from core.YOLOv4 import YOLOv4
+from core.YOLOv4.model import YOLOv4
 from datetime import datetime
 
 

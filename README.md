@@ -7,9 +7,28 @@ YOLOv3, YOLOv4, YOLOv5, YOLOX的PyTorch实现。（持续更新中......）
 ```commandline
 pip install -r requirements.txt
 ```
-3. Modify the configuration file under the `experiments` folder according to your needs.
-4. Change the `CONFIG` parameter in `train.py`, and then run `train.py` to start training.
-5. Change the `CONFIG` parameter in `test.py`, and then run `test.py` to detect multiple pictures at once.
+3. Install `pycocotools`.
+4. Download [COCO2017](https://cocodataset.org/#download) and [VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/index.html#devkit), and then extract them under `data` folder, make them look like this:
+```
+|-- data
+    |-- coco
+    |   |-- annotations
+    |   |   |-- instances_train2017.json
+    |   |   `-- instances_val2017.json
+    |   `-- images
+    |       |-- train2017
+    |       |   |-- ... 
+    |       `-- val2017
+    |           |-- ... 
+    |-- VOCdevkit
+    `-- |-- Annotations
+        |-- ImageSets
+        |-- JPEGImages
+        |-- SegmentationClass
+        |-- SegmentationObject
+```
+5. Modify the configuration file under the `experiments` folder according to your needs.
+6. Change the `CONFIG` parameter in `setup.py`, and then run `setup.py` to start training or detect multiple pictures at once.
 # 运行结果(Results)
 1. YoloV3 on VOC<br>
 ![测试图片1.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample1.jpg?raw=True)

@@ -38,17 +38,17 @@ class Decode:
         wh = RegL1Loss.gather_feat(feat=wh, ind=inds)
         clses = torch.reshape(clses, (batch_size, self.K)).to(torch.float32)
         scores = torch.reshape(scores, (batch_size, self.K))
-        bboxes = torch.cat(tensors=[xs - wh[..., 0:1] / 2,
-                                    ys - wh[..., 1:2] / 2,
-                                    xs + wh[..., 0:1] / 2,
-                                    ys + wh[..., 1:2] / 2], dim=-1)
+        bboxes = torch.cat(tensors=[xs.unsqueeze(-1) - wh[..., 0:1] / 2,
+                                    ys.unsqueeze(-1) - wh[..., 1:2] / 2,
+                                    xs.unsqueeze(-1) + wh[..., 0:1] / 2,
+                                    ys.unsqueeze(-1) + wh[..., 1:2] / 2], dim=-1)   # shape: (batch_size, self.K, 4)
         bboxes /= (self.input_image_size / self.downsampling_ratio)
         bboxes = reverse_letter_box(h=self.original_image_size[0], w=self.original_image_size[1],
                                     input_size=self.input_image_size, boxes=bboxes)
         bboxes[:, 0::2] = torch.clamp(bboxes[:, 0::2], min=0, max=self.original_image_size[1] - 1)
         bboxes[:, 1::2] = torch.clamp(bboxes[:, 1::2], min=0, max=self.original_image_size[0] - 1)
 
-        score_mask = scores >= self.score_threshold
+        score_mask = scores >= self.score_threshold   # shape: (batch_size, self.K)
 
         bboxes = bboxes[score_mask]
         scores = scores[score_mask]

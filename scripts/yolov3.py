@@ -1,23 +1,22 @@
 import os
 import time
-from pathlib import Path
 
 import cv2
+import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.transforms.functional import to_tensor
 
-from core.CenterNet.dataloader import TrainLoader
-from core.CenterNet.inference import Decode
-from core.CenterNet.loss import CombinedLoss
-from core.CenterNet.model import CenterNet
-from core.CenterNet.target_generator import TargetGenerator
+from core.YOLOv3.dataloader import TrainLoader
+from core.YOLOv3.inference import Inference
+from core.YOLOv3.loss import YoloLoss, make_label
+from core.YOLOv3.model import YoloV3
 from draw import Draw
 from utils.tools import MeanMetric, letter_box
 from .template import ITrainer
 
 
-class CenterNetTrainer(ITrainer):
+class Yolo3Trainer(ITrainer):
     def __init__(self, cfg):
         # 一些训练超参数
         self.scheduler = None
@@ -42,7 +41,7 @@ class CenterNetTrainer(ITrainer):
         self.train_dataloader = None
 
     def _set_model(self):
-        self.model = CenterNet(self.cfg)
+        self.model = YoloV3(self.num_classes)
         self.model.to(device=self.device)
 
     def _set_train_dataloader(self, *args, **kwargs):
@@ -58,9 +57,9 @@ class CenterNetTrainer(ITrainer):
         self.model.load_state_dict(torch.load(weights_path, map_location=self.device))
 
     def _save(self, epoch, save_entire_model=False):
-        torch.save(self.model.state_dict(), self.save_path + "centernet_epoch_{}.pth".format(epoch))
+        torch.save(self.model.state_dict(), self.save_path + "YOLOv3_epoch_{}.pth".format(epoch))
         if save_entire_model:
-            torch.save(self.model, self.save_path + "centernet_entire_model.pth")
+            torch.save(self.model, self.save_path + "YOLOv3_entire_model.pth")
 
     def train(self, *args, **kwargs):
         self._set_model()
@@ -68,15 +67,20 @@ class CenterNetTrainer(ITrainer):
         self._set_optimizer()
         self._set_lr_scheduler()
         # 损失函数
-        criterion = CombinedLoss(self.cfg)
+        criterion = YoloLoss(self.cfg, self.device)
         # metrics
         loss_mean = MeanMetric()
+        loc_loss_mean = MeanMetric()
+        conf_loss_mean = MeanMetric()
+        prob_loss_mean = MeanMetric()
+
         start_epoch = -1
         if self.load_weights:
             # 加载权重参数
             self._load(weights_path=Path(self.save_path).joinpath(
                 "centernet_epoch_{}.pth".format(self.resume_training_from_epoch)))
             start_epoch = self.resume_training_from_epoch
+
         if self.tensorboard_on:
             writer = SummaryWriter()  # 在控制台使用命令 tensorboard --logdir=runs 进入tensorboard面板
             writer.add_graph(self.model, torch.randn(self.batch_size, 3, self.input_size, self.input_size,
@@ -87,29 +91,45 @@ class CenterNetTrainer(ITrainer):
                 start_time = time.time()
 
                 images = images.to(device=self.device)
-                labels = labels.to(device=self.device)
-                target = list(TargetGenerator(self.cfg, labels).__call__())
+                targets = make_label(self.cfg, labels)
+                targets = [x.to(device=self.device) for x in targets]
 
                 self.optimizer.zero_grad()
                 preds = self.model(images)
-                target.insert(0, preds)
-                loss = criterion(*target)
+                loss, loc_loss, conf_loss, prob_loss = criterion(preds, targets)
                 loss_mean.update(loss.item())
+                loc_loss_mean.update(loc_loss.item())
+                conf_loss_mean.update(conf_loss.item())
+                prob_loss_mean.update(prob_loss.item())
                 loss.backward()
                 self.optimizer.step()
 
-                print("Epoch: {}/{}, step: {}/{}, speed: {:.3f}s/step, loss: {}".format(epoch,
-                                                                                        self.epochs,
-                                                                                        i,
-                                                                                        len(self.train_dataloader),
-                                                                                        time.time() - start_time,
-                                                                                        loss_mean.result(),
-                                                                                        ))
+                print("Epoch: {}/{}, step: {}/{}, speed: {:.3f}s/step, total_loss: {}, "
+                      "loc_loss: {}, conf_loss: {}, prob_loss: {}".format(epoch,
+                                                                          self.epochs,
+                                                                          i,
+                                                                          len(self.train_dataloader),
+                                                                          time.time() - start_time,
+                                                                          loss_mean.result(),
+                                                                          loc_loss_mean.result(),
+                                                                          conf_loss_mean.result(),
+                                                                          prob_loss_mean.result(),
+                                                                          ))
                 if self.tensorboard_on:
-                    writer.add_scalar(tag="Loss", scalar_value=loss_mean.result(),
+                    writer.add_scalar(tag="Total Loss", scalar_value=loss_mean.result(),
                                       global_step=epoch * len(self.train_dataloader) + i)
+                    writer.add_scalar(tag="Loc Loss", scalar_value=loc_loss_mean.result(),
+                                      global_step=epoch * len(self.train_dataloader) + i)
+                    writer.add_scalar(tag="Conf Loss", scalar_value=conf_loss_mean.result(),
+                                      global_step=epoch * len(self.train_dataloader) + i)
+                    writer.add_scalar(tag="Prob Loss", scalar_value=prob_loss_mean.result(),
+                                      global_step=epoch * len(self.train_dataloader) + i)
+
             self.scheduler.step(loss_mean.result())
             loss_mean.reset()
+            loc_loss_mean.reset()
+            conf_loss_mean.reset()
+            prob_loss_mean.reset()
 
             if epoch % self.save_frequency == 0:
                 self._save(epoch=epoch)
@@ -119,6 +139,7 @@ class CenterNetTrainer(ITrainer):
 
         if self.tensorboard_on:
             writer.close()
+
         self._save(epoch=self.epochs, save_entire_model=True)
 
     def test(self, images, prefix, *args, **kwargs):
@@ -140,10 +161,11 @@ class CenterNetTrainer(ITrainer):
 
         with torch.no_grad():
             outputs = self.model(image)
-            decoder = Decode(self.cfg, [h, w], self.input_size)
-            boxes, scores, classes = decoder(outputs)
+            boxes, scores, classes = Inference(cfg=self.cfg, outputs=outputs, input_image_shape=(h, w),
+                                               device=self.device).get_results()
         boxes = boxes.cpu().numpy()
         scores = scores.cpu().numpy()
+        scores = np.squeeze(scores)
         classes = classes.cpu().numpy()
         if print_on:
             print("检测出{}个边界框，分别是：".format(boxes.shape[0]))

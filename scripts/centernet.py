@@ -148,7 +148,7 @@ class CenterNetTrainer(ITrainer):
         boxes = boxes.cpu().numpy()
         scores = scores.cpu().numpy()
         classes = classes.cpu().numpy()
-        classes = classes.asdtype(np.int32)
+        classes = classes.astype(np.int32)
         if print_on:
             print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
             print("boxes: ", boxes)

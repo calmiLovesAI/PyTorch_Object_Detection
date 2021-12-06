@@ -116,7 +116,7 @@ class CenterNetTrainer(ITrainer):
                 self._save(epoch=epoch)
 
             if self.test_during_training:
-                self.test(images=self.test_pictures, prefix="epoch-{}".format(epoch))
+                self.test(images=self.test_pictures, prefix="epoch-{}".format(epoch), model_filename="")
 
         if self.tensorboard_on:
             writer.close()

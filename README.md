@@ -22,7 +22,7 @@ pip install -r requirements.txt
 - [x] Yolo_v4
 - [ ] Yolo_v5
 - [ ] Yolo_X
-- [ ] CenterNet
+- [x] CenterNet
 2. 发布在COCO数据集上训练好的模型
 - [ ] Yolo_v3
 - [ ] Yolo_v4

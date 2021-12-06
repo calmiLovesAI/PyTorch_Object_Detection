@@ -7,11 +7,11 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.transforms.functional import to_tensor
 
-from CenterNet.dataloader import TrainLoader
-from CenterNet.inference import Decode
-from CenterNet.loss import CombinedLoss
-from CenterNet.model import CenterNet
-from CenterNet.target_generator import TargetGenerator
+from core.CenterNet.dataloader import TrainLoader
+from core.CenterNet.inference import Decode
+from core.CenterNet.loss import CombinedLoss
+from core.CenterNet.model import CenterNet
+from core.CenterNet.target_generator import TargetGenerator
 from draw import Draw
 from utils.tools import MeanMetric, letter_box
 from .template import ITrainer

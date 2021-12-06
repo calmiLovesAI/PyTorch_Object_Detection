@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from CenterNet.dla import DLASeg
+from core.CenterNet.dla import DLASeg
 
 
 class CenterNet(nn.Module):

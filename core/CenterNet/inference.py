@@ -1,6 +1,6 @@
 import torch
 
-from CenterNet.loss import RegL1Loss
+from core.CenterNet.loss import RegL1Loss
 from utils.tools import reverse_letter_box
 
 

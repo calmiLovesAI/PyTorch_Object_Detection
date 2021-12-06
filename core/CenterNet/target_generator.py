@@ -1,6 +1,6 @@
 import torch
 
-from CenterNet.gaussian import gaussian_radius, draw_umich_gaussian
+from core.CenterNet.gaussian import gaussian_radius, draw_umich_gaussian
 
 
 class TargetGenerator:

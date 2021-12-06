@@ -67,7 +67,8 @@ class Decode:
         scores = torch.reshape(scores, shape=(B, -1))
         topk_scores, topk_inds = torch.topk(input=scores, k=k, largest=True, sorted=True)
         topk_clses = topk_inds % C
-        topk_xs = (topk_inds // C % W).to(torch.float32)
-        topk_ys = (topk_inds // C // W).to(torch.float32)
+        tmp = torch.div(topk_inds, C, rounding_mode="floor")
+        topk_xs = (tmp % W).to(torch.float32)
+        topk_ys = torch.div(tmp, W, rounding_mode="floor").to(torch.float32)
         topk_inds = (topk_ys * W + topk_xs).to(torch.int32)
         return topk_scores, topk_inds, topk_clses, topk_ys, topk_xs

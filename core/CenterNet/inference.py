@@ -45,6 +45,9 @@ class Decode:
         bboxes /= (self.input_image_size / self.downsampling_ratio)
         bboxes = reverse_letter_box(h=self.original_image_size[0], w=self.original_image_size[1],
                                     input_size=self.input_image_size, boxes=bboxes)
+        bboxes[:, 0::2] = torch.clamp(bboxes[:, 0::2], min=0, max=self.original_image_size[1] - 1)
+        bboxes[:, 1::2] = torch.clamp(bboxes[:, 1::2], min=0, max=self.original_image_size[0] - 1)
+
         score_mask = scores >= self.score_threshold
 
         bboxes = bboxes[score_mask]

@@ -1,12 +1,15 @@
 # YOLO_Series
 YOLOv3, YOLOv4, YOLOv5, YOLOX的PyTorch实现。（持续更新中......）
 
-# 使用方法(Installation)
-首先你需要确保安装PyTorch 1.10.0及以上版本，torchvision 0.11.1及以上版本；
-然后运行pip install requirements.txt安装依赖项。如果有必要的话，
-修改experiments文件夹下的配置文件，最后运行项目根目录下的train_xxx.py文件就可以开始训练了，
-测试单张图片的结果可以运行test_xxx.py，跑一段视频可以运行video_xxx.py。
-
+# Quick start
+1. Make sure that you have installed PyTorch 1.10.0 and torchvision 0.11.1 or higher.
+2. Run the following to install dependencies.
+```commandline
+pip install -r requirements.txt
+```
+3. Modify the configuration file under the `experiments` folder according to your needs.
+4. Change the `CONFIG` parameter in `train.py`, and then run `train.py` to start training.
+5. Change the `CONFIG` parameter in `test.py`, and then run `test.py` to detect multiple pictures at once.
 # 运行结果(Results)
 1. YoloV3 on VOC<br>
 ![测试图片1.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample1.jpg?raw=True)

@@ -3,27 +3,27 @@ from abc import ABCMeta, abstractmethod
 
 class ITrainer(metaclass=ABCMeta):
     @abstractmethod
-    def set_model(self, *args, **kwargs):
+    def _set_model(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def set_train_dataloader(self, *args, **kwargs):
+    def _set_train_dataloader(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def set_optimizer(self, *args, **kwargs):
+    def _set_optimizer(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def set_lr_scheduler(self, *args, **kwargs):
+    def _set_lr_scheduler(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def load(self, *args, **kwargs):
+    def _load(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def save(self, *args, **kwargs):
+    def _save(self, *args, **kwargs):
         pass
 
     @abstractmethod
@@ -32,4 +32,8 @@ class ITrainer(metaclass=ABCMeta):
 
     @abstractmethod
     def test(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def _test_pipeline(self, *args, **kwargs):
         pass

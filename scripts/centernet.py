@@ -1,14 +1,16 @@
 import time
 from pathlib import Path
 
+import cv2
 import torch
 from torch.utils.tensorboard import SummaryWriter
+from torchvision.transforms.functional import to_tensor
 
 from CenterNet.dataloader import TrainLoader
 from CenterNet.loss import CombinedLoss
 from CenterNet.model import CenterNet
 from CenterNet.target_generator import TargetGenerator
-from utils.tools import MeanMetric
+from utils.tools import MeanMetric, letter_box
 from .template import ITrainer
 
 
@@ -36,32 +38,32 @@ class CenterNetTrainer(ITrainer):
         # 训练数据集
         self.train_dataloader = None
 
-    def set_model(self):
+    def _set_model(self):
         self.model = CenterNet(self.cfg)
         self.model.to(device=self.device)
 
-    def set_train_dataloader(self, *args, **kwargs):
+    def _set_train_dataloader(self, *args, **kwargs):
         self.train_dataloader = TrainLoader(self.cfg).__call__()
 
-    def set_optimizer(self):
+    def _set_optimizer(self):
         self.optimizer = torch.optim.Adam(params=self.model.parameters(), lr=self.learning_rate)
 
-    def set_lr_scheduler(self):
+    def _set_lr_scheduler(self):
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode="min", patience=2)
 
-    def load(self, weights_path):
+    def _load(self, weights_path):
         self.model.load_state_dict(torch.load(weights_path, map_location=self.device))
 
-    def save(self, epoch, save_entire_model=False):
+    def _save(self, epoch, save_entire_model=False):
         torch.save(self.model.state_dict(), self.save_path + "centernet_epoch_{}.pth".format(epoch))
         if save_entire_model:
             torch.save(self.model, self.save_path + "centernet_entire_model.pth")
 
     def train(self, *args, **kwargs):
-        self.set_model()
-        self.set_train_dataloader()
-        self.set_optimizer()
-        self.set_lr_scheduler()
+        self._set_model()
+        self._set_train_dataloader()
+        self._set_optimizer()
+        self._set_lr_scheduler()
         # 损失函数
         criterion = CombinedLoss(self.cfg)
         # metrics
@@ -69,7 +71,7 @@ class CenterNetTrainer(ITrainer):
         start_epoch = -1
         if self.load_weights:
             # 加载权重参数
-            self.load(weights_path=Path(self.save_path).joinpath(
+            self._load(weights_path=Path(self.save_path).joinpath(
                 "centernet_epoch_{}.pth".format(self.resume_training_from_epoch)))
             start_epoch = self.resume_training_from_epoch
         if self.tensorboard_on:
@@ -94,12 +96,12 @@ class CenterNetTrainer(ITrainer):
                 self.optimizer.step()
 
                 print("Epoch: {}/{}, step: {}/{}, speed: {:.3f}s/step, loss: {}".format(epoch,
-                                                                          self.epochs,
-                                                                          i,
-                                                                          len(self.train_dataloader),
-                                                                          time.time() - start_time,
-                                                                          loss_mean.result(),
-                                                                          ))
+                                                                                        self.epochs,
+                                                                                        i,
+                                                                                        len(self.train_dataloader),
+                                                                                        time.time() - start_time,
+                                                                                        loss_mean.result(),
+                                                                                        ))
                 if self.tensorboard_on:
                     writer.add_scalar(tag="Loss", scalar_value=loss_mean.result(),
                                       global_step=epoch * len(self.train_dataloader) + i)
@@ -107,9 +109,22 @@ class CenterNetTrainer(ITrainer):
             loss_mean.reset()
 
             if epoch % self.save_frequency == 0:
-                self.save(epoch=epoch)
+                self._save(epoch=epoch)
 
-        self.save(epoch=self.epochs, save_entire_model=True)
+        self._save(epoch=self.epochs, save_entire_model=True)
 
     def test(self, *args, **kwargs):
+        self.model.eval()
         pass
+
+    def _test_pipeline(self, image_path, save_dir=None, print_on=True, save_result=True, *args, **kwargs):
+        image = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        h, w, c = image.shape
+        image, _, _ = letter_box(image, (self.input_size, self.input_size))
+        image = to_tensor(image)
+        image = torch.unsqueeze(image, dim=0)
+        image = image.to(device=self.device)
+
+        with torch.no_grad():
+            outputs = self.model(image)

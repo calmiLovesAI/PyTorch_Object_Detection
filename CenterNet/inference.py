@@ -1,5 +1,8 @@
 import torch
 
+from CenterNet.loss import RegL1Loss
+from utils.tools import reverse_letter_box
+
 
 class Decode:
     def __init__(self, cfg, original_image_size, input_image_size):
@@ -12,8 +15,8 @@ class Decode:
         self.device = cfg["device"]
         self.K = cfg["Train"]["max_num_boxes"]
         self.num_classes = cfg["Model"]["num_classes"]
-        self.original_image_size = torch.tensor(original_image_size, dtype=torch.float32, device=self.device)
-        self.input_image_size = torch.tensor(input_image_size, dtype=torch.float32, device=self.device)
+        self.original_image_size = original_image_size
+        self.input_image_size = input_image_size
         self.downsampling_ratio = cfg["Model"]["downsampling_ratio"]
         self.score_threshold = cfg["Decode"]["score_threshold"]
 
@@ -24,7 +27,30 @@ class Decode:
         heatmap = torch.sigmoid(heatmap)
         batch_size = heatmap.size()[0]
         heatmap = Decode._nms(heatmap)
-        pass
+        scores, inds, clses, ys, xs = Decode._top_k(scores=heatmap, k=self.K)
+        if reg is not None:
+            reg = RegL1Loss.gather_feat(feat=reg, ind=inds)
+            xs = torch.reshape(xs, shape=(batch_size, self.K)) + reg[:, :, 0]
+            ys = torch.reshape(ys, shape=(batch_size, self.K)) + reg[:, :, 1]
+        else:
+            xs = torch.reshape(xs, shape=(batch_size, self.K)) + 0.5
+            ys = torch.reshape(ys, shape=(batch_size, self.K)) + 0.5
+        wh = RegL1Loss.gather_feat(feat=wh, ind=inds)
+        clses = torch.reshape(clses, (batch_size, self.K)).to(torch.float32)
+        scores = torch.reshape(scores, (batch_size, self.K))
+        bboxes = torch.cat(tensors=[xs - wh[..., 0:1] / 2,
+                                    ys - wh[..., 1:2] / 2,
+                                    xs + wh[..., 0:1] / 2,
+                                    ys + wh[..., 1:2] / 2], dim=-1)
+        bboxes /= (self.input_image_size / self.downsampling_ratio)
+        bboxes = reverse_letter_box(h=self.original_image_size[0], w=self.original_image_size[1],
+                                    input_size=self.input_image_size, boxes=bboxes)
+        score_mask = scores >= self.score_threshold
+
+        bboxes = bboxes[score_mask]
+        scores = scores[score_mask]
+        clses = clses[score_mask]
+        return bboxes, scores, clses
 
     @staticmethod
     def _nms(heatmap, pool_size=3):

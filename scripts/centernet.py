@@ -1,3 +1,4 @@
+import os
 import time
 from pathlib import Path
 
@@ -7,9 +8,11 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision.transforms.functional import to_tensor
 
 from CenterNet.dataloader import TrainLoader
+from CenterNet.inference import Decode
 from CenterNet.loss import CombinedLoss
 from CenterNet.model import CenterNet
 from CenterNet.target_generator import TargetGenerator
+from draw import Draw
 from utils.tools import MeanMetric, letter_box
 from .template import ITrainer
 
@@ -111,11 +114,18 @@ class CenterNetTrainer(ITrainer):
             if epoch % self.save_frequency == 0:
                 self._save(epoch=epoch)
 
+            if self.test_during_training:
+                self.test(images=self.test_pictures, prefix="epoch-{}".format(epoch))
+
         self._save(epoch=self.epochs, save_entire_model=True)
 
-    def test(self, *args, **kwargs):
+    def test(self, images, prefix, *args, **kwargs):
         self.model.eval()
-        pass
+        for image in images:
+            start_time = time.time()
+            save_dir = "./detect/{}_".format(prefix) + os.path.basename(image).split(".")[0] + ".jpg"
+            self._test_pipeline(image, save_dir=save_dir)
+            print("检测图片{}用时：{:.4f}s".format(image, time.time() - start_time))
 
     def _test_pipeline(self, image_path, save_dir=None, print_on=True, save_result=True, *args, **kwargs):
         image = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
@@ -128,3 +138,22 @@ class CenterNetTrainer(ITrainer):
 
         with torch.no_grad():
             outputs = self.model(image)
+            decoder = Decode(self.cfg, [h, w], self.input_size)
+            boxes, scores, classes = decoder(outputs)
+        boxes = boxes.cpu().numpy()
+        scores = scores.cpu().numpy()
+        classes = classes.cpu().numpy()
+        if print_on:
+            print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
+            print("boxes: ", boxes)
+            print("scores: ", scores)
+            print("classes: ", classes)
+
+        painter = Draw(self.cfg)
+        image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
+
+        if save_result:
+            # 保存检测结果
+            cv2.imwrite(save_dir, image_with_boxes)
+        else:
+            return image_with_boxes

@@ -28,14 +28,14 @@ class FocalLoss:
 
 class RegL1Loss:
     def __call__(self, y_true, y_pred, mask, index):
-        pred = RegL1Loss._gather_feat(y_pred, index)
+        pred = RegL1Loss.gather_feat(y_pred, index)
         mask = mask.unsqueeze(2).expand_as(pred).float()
         loss = F.l1_loss(pred * mask, y_true * mask, reduction="sum")
         loss = loss / (mask.sum() + 1e-4)
         return loss
 
     @staticmethod
-    def _gather_feat(feat, ind):
+    def gather_feat(feat, ind):
         feat = torch.reshape(feat, shape=(feat.size()[0], -1, feat.size()[3]))
         ind = ind.unsqueeze(2).to(torch.int64)
         ind = ind.expand(ind.size()[0], ind.size()[1], feat.size()[2])

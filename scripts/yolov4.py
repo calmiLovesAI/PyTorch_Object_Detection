@@ -56,6 +56,8 @@ class Yolo4Trainer(ITrainer):
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode="min", patience=2)
 
     def _load(self, weights_path):
+        if self.model is None:
+            self._set_model()
         self.model.load_state_dict(torch.load(weights_path, map_location=self.device))
 
     def _save(self, epoch, save_entire_model=False):

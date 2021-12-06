@@ -1,5 +1,6 @@
 import os
 import time
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -78,7 +79,7 @@ class Yolo3Trainer(ITrainer):
         if self.load_weights:
             # 加载权重参数
             self._load(weights_path=Path(self.save_path).joinpath(
-                "centernet_epoch_{}.pth".format(self.resume_training_from_epoch)))
+                "YOLOv3_epoch_{}.pth".format(self.resume_training_from_epoch)))
             start_epoch = self.resume_training_from_epoch
 
         if self.tensorboard_on:
@@ -142,7 +143,9 @@ class Yolo3Trainer(ITrainer):
 
         self._save(epoch=self.epochs, save_entire_model=True)
 
-    def test(self, images, prefix, *args, **kwargs):
+    def test(self, images, prefix, model_filename, load_model=False, *args, **kwargs):
+        if load_model:
+            self._load(weights_path=Path(self.save_path).joinpath(model_filename))
         self.model.eval()
         for image in images:
             start_time = time.time()

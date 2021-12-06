@@ -2,8 +2,8 @@ import torch
 import torch.nn.functional as F
 
 from utils.tools import iou_2, Iou4
-from YOLOv3.inference import predict_bounding_bbox
-from YOLOv3.anchor import get_anchor
+from core.YOLOv3.inference import predict_bounding_bbox
+from core.YOLOv3.anchor import get_anchor
 
 
 def make_label(cfg, true_boxes):

@@ -1,8 +1,8 @@
 import torch
 
 
-from YOLOv3.inference import test_pipeline
-from YOLOv3.model import YoloV3
+from core.YOLOv3.inference import test_pipeline
+from core.YOLOv3.model import YoloV3
 from load_yaml import load_yamls
 from video import Video
 

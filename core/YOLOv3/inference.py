@@ -2,8 +2,8 @@ import numpy as np
 import torch
 import cv2
 
-from YOLOv3.anchor import get_anchor
-from YOLOv3.nms import apply_nms
+from core.YOLOv3.anchor import get_anchor
+from core.YOLOv3.nms import apply_nms
 from draw import Draw
 from utils.tools import letter_box, reverse_letter_box
 from torchvision.transforms.functional import to_tensor

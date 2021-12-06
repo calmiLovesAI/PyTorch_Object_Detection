@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from YOLOv5.modules import ConvBnAct, C3, SPPF
+from core.YOLOv5.modules import ConvBnAct, C3, SPPF
 
 
 class YoloV5S(nn.Module):

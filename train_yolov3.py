@@ -2,10 +2,10 @@ import torch
 import time
 
 from pathlib import Path
-from YOLOv3.dataloader import TrainLoader
+from core.YOLOv3.dataloader import TrainLoader
 from load_yaml import load_yamls
-from YOLOv3.loss import make_label, YoloLoss
-from YOLOv3.model import YoloV3
+from core.YOLOv3.loss import make_label, YoloLoss
+from core.YOLOv3.model import YoloV3
 from utils.tools import MeanMetric
 from test_yolov3 import detect
 

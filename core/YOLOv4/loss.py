@@ -1,8 +1,8 @@
 import torch
 import torch.nn.functional as F
 
-from YOLOv4.anchor import get_anchor
-from YOLOv4.inference import encode_outputs
+from core.YOLOv4.anchor import get_anchor
+from core.YOLOv4.inference import encode_outputs
 from utils.iou import box_iou_xywh, box_ciou_xywh
 
 

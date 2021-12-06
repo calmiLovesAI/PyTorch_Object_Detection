@@ -3,10 +3,10 @@ from pathlib import Path
 
 import torch
 
-from YOLOv4.dataloader import TrainLoader
+from core.YOLOv4.dataloader import TrainLoader
 from load_yaml import load_yamls
-from YOLOv4.loss import YoloLoss, make_label
-from YOLOv4.model import YOLOv4
+from core.YOLOv4.loss import YoloLoss, make_label
+from core.YOLOv4 import YOLOv4
 from test_yolov4 import detect
 from utils.tools import MeanMetric
 

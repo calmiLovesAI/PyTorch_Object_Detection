@@ -24,7 +24,7 @@ class TargetGenerator:
         gt_reg_mask = torch.zeros(self.batch_size, self.max_num_boxes, dtype=torch.float32, device=self.device)
         gt_indices = torch.zeros(self.batch_size, self.max_num_boxes, dtype=torch.float32, device=self.device)
         for i, label in enumerate(self.batch_labels):
-            label = label[label[:, -1] != -1]
+            label = label[label[:, -1] != -1]    # shape: (N, 5)
             hm, reg, wh, reg_mask, ind = self._parse_label(label)
             gt_heatmap[i, :, :, :] = hm
             gt_reg[i, :, :] = reg

@@ -11,12 +11,12 @@ class FocalLoss:
         """
         pos_idx = torch.eq(y_true, 1).to(torch.float32)
         neg_idx = torch.lt(y_true, 1).to(torch.float32)
-        neg_weights = torch.pow(1-y_true, 4)
+        neg_weights = torch.pow(1 - y_true, 4)
         loss = 0
         num_pos = torch.sum(pos_idx)
-        pos_loss = torch.log(y_pred) * torch.pow(1-y_pred, 2) * pos_idx
+        pos_loss = torch.log(y_pred) * torch.pow(1 - y_pred, 2) * pos_idx
         pos_loss = torch.sum(pos_loss)
-        neg_loss = torch.log(1-y_pred) * torch.pow(y_pred, 2) * neg_weights * neg_idx
+        neg_loss = torch.log(1 - y_pred) * torch.pow(y_pred, 2) * neg_weights * neg_idx
         neg_loss = torch.sum(neg_loss)
 
         if num_pos == 0:
@@ -58,7 +58,7 @@ class CombinedLoss:
         heatmap = y_pred[..., :self.num_classes]
         reg = y_pred[..., self.num_classes: self.num_classes + 2]
         wh = y_pred[..., -2:]
-        heatmap = torch.clamp(input=torch.sigmoid(heatmap), min=1e-4, max=1.0-1e-4)
+        heatmap = torch.clamp(input=torch.sigmoid(heatmap), min=1e-4, max=1.0 - 1e-4)
         heatmap_loss = self.heatmap_loss_object(y_true=heatmap_true, y_pred=heatmap)
         off_loss = self.reg_loss_object(y_true=reg_true, y_pred=reg, mask=reg_mask, index=indices)
         wh_loss = self.wh_loss_object(y_true=wh_true, y_pred=wh, mask=reg_mask, index=indices)

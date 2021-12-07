@@ -26,4 +26,5 @@ Loss:
   wh_weight: 0.1
   off_weight: 1.0
 Decode:
+  max_boxes_per_img: 50
   score_threshold: 0.6

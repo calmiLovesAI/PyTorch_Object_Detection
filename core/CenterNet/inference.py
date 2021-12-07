@@ -13,11 +13,12 @@ class Decode:
         :param input_image_size: [H, W]
         """
         self.device = cfg["device"]
-        self.K = cfg["Train"]["max_num_boxes"]
+        self.K = cfg["Decode"]["max_boxes_per_img"]
         self.num_classes = cfg["Model"]["num_classes"]
         self.original_image_size = original_image_size
         self.input_image_size = input_image_size
         self.downsampling_ratio = cfg["Model"]["downsampling_ratio"]
+        self.feature_size = self.input_image_size / self.downsampling_ratio
         self.score_threshold = cfg["Decode"]["score_threshold"]
 
     def __call__(self, outputs):
@@ -36,17 +37,17 @@ class Decode:
             xs = torch.reshape(xs, shape=(batch_size, self.K)) + 0.5
             ys = torch.reshape(ys, shape=(batch_size, self.K)) + 0.5
         wh = RegL1Loss.gather_feat(feat=wh, ind=inds)
-        clses = torch.reshape(clses, (batch_size, self.K)).to(torch.float32)
+        clses = torch.reshape(clses, (batch_size, self.K))
         scores = torch.reshape(scores, (batch_size, self.K))
         bboxes = torch.cat(tensors=[xs.unsqueeze(-1) - wh[..., 0:1] / 2,
                                     ys.unsqueeze(-1) - wh[..., 1:2] / 2,
                                     xs.unsqueeze(-1) + wh[..., 0:1] / 2,
                                     ys.unsqueeze(-1) + wh[..., 1:2] / 2], dim=-1)   # shape: (batch_size, self.K, 4)
-        bboxes /= (self.input_image_size / self.downsampling_ratio)
+
+        bboxes /= self.feature_size
+        bboxes = torch.clamp(bboxes, min=0, max=1)
         bboxes = reverse_letter_box(h=self.original_image_size[0], w=self.original_image_size[1],
                                     input_size=self.input_image_size, boxes=bboxes)
-        bboxes[:, 0::2] = torch.clamp(bboxes[:, 0::2], min=0, max=self.original_image_size[1] - 1)
-        bboxes[:, 1::2] = torch.clamp(bboxes[:, 1::2], min=0, max=self.original_image_size[0] - 1)
 
         score_mask = scores >= self.score_threshold   # shape: (batch_size, self.K)
 
@@ -57,18 +58,17 @@ class Decode:
 
     @staticmethod
     def _nms(heatmap, pool_size=3):
-        hmax = torch.nn.MaxPool2d(kernel_size=pool_size, stride=1, padding=(pool_size - 1) // 2)(heatmap)
+        hmax = torch.nn.MaxPool2d(kernel_size=pool_size, stride=1, padding=((pool_size - 1) // 2))(heatmap)
         keep = torch.eq(heatmap, hmax).to(torch.float32)
-        return hmax * keep
+        return heatmap * keep
 
     @staticmethod
     def _top_k(scores, k):
         B, H, W, C = scores.size()
         scores = torch.reshape(scores, shape=(B, -1))
         topk_scores, topk_inds = torch.topk(input=scores, k=k, largest=True, sorted=True)
-        topk_clses = topk_inds % C
-        tmp = torch.div(topk_inds, C, rounding_mode="floor")
-        topk_xs = (tmp % W).to(torch.float32)
-        topk_ys = torch.div(tmp, W, rounding_mode="floor").to(torch.float32)
-        topk_inds = (topk_ys * W + topk_xs).to(torch.int32)
-        return topk_scores, topk_inds, topk_clses, topk_ys, topk_xs
+        topk_clses = topk_inds % C   # 应该选取哪些通道（类别）
+        pixel = torch.div(topk_inds, C, rounding_mode="floor")
+        topk_ys = torch.div(pixel, W, rounding_mode="floor")    # 中心点的y坐标
+        topk_xs = pixel % W    # 中心点的x坐标
+        return topk_scores, pixel, topk_clses, topk_ys, topk_xs

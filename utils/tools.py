@@ -2,6 +2,13 @@ import cv2
 import torch
 
 
+def cv2_read_image(image_path):
+    image = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    h, w, c = image.shape
+    return image, h, w, c
+
+
 def letter_box(image, size):
     h, w, _ = image.shape
     H, W = size

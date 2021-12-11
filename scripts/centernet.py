@@ -26,17 +26,20 @@ class CenterNetTrainer(ITrainer):
         self.model = None
         self.cfg = cfg
         self.device = cfg["device"]
+        self.start_epoch = cfg["Train"]["start_epoch"]
         self.epochs = cfg["Train"]["epochs"]
         self.batch_size = cfg["Train"]["batch_size"]
         self.input_size = cfg["Train"]["input_size"]
+        self.model_name = cfg["Model"]["name"]
         self.num_classes = cfg["Model"]["num_classes"]
         self.learning_rate = cfg["Train"]["learning_rate"]
+        self.dataset_name = cfg["Train"]["dataset_name"]
         self.save_frequency = cfg["Train"]["save_frequency"]  # 模型保存频率
         self.save_path = cfg["Train"]["save_path"]  # 模型保存路径
         self.test_pictures = cfg["Train"]["test_pictures"]  # 测试图片路径列表
         self.load_weights = cfg["Train"]["load_weights"]  # 训练之前是否加载权重
         self.test_during_training = cfg["Train"]["test_during_training"]  # 是否在每一轮epoch结束后开启图片测试
-        self.resume_training_from_epoch = cfg["Train"]["resume_training_from_epoch"]
+        self.pretrained_weights = cfg["Train"]["pretrained_weights"]  # 预训练的模型路径
         self.tensorboard_on = cfg["Train"]["tensorboard_on"]  # 是否开启tensorboard
 
         # 训练数据集
@@ -61,9 +64,10 @@ class CenterNetTrainer(ITrainer):
         self.model.load_state_dict(torch.load(weights_path, map_location=self.device))
 
     def _save(self, epoch, save_entire_model=False):
-        torch.save(self.model.state_dict(), self.save_path + "centernet_epoch_{}.pth".format(epoch))
+        torch.save(self.model.state_dict(),
+                   self.save_path + "{}_{}_epoch_{}.pth".format(self.model_name, self.dataset_name, epoch))
         if save_entire_model:
-            torch.save(self.model, self.save_path + "centernet_entire_model.pth")
+            torch.save(self.model, self.save_path + "{}_{}_entire_model.pth".format(self.model_name, self.dataset_name))
 
     def train(self, *args, **kwargs):
         self._set_model()
@@ -74,17 +78,14 @@ class CenterNetTrainer(ITrainer):
         criterion = CombinedLoss(self.cfg)
         # metrics
         loss_mean = MeanMetric()
-        start_epoch = -1
         if self.load_weights:
             # 加载权重参数
-            self._load(weights_path=Path(self.save_path).joinpath(
-                "centernet_epoch_{}.pth".format(self.resume_training_from_epoch)))
-            start_epoch = self.resume_training_from_epoch
+            self._load(weights_path=Path(self.save_path).joinpath(self.pretrained_weights))
         if self.tensorboard_on:
             writer = SummaryWriter()  # 在控制台使用命令 tensorboard --logdir=runs 进入tensorboard面板
             writer.add_graph(self.model, torch.randn(self.batch_size, 3, self.input_size, self.input_size,
                                                      dtype=torch.float32, device=self.device))
-        for epoch in range(start_epoch + 1, self.epochs):
+        for epoch in range(self.start_epoch, self.epochs):
             self.model.train()
             for i, (images, labels) in enumerate(self.train_dataloader):
                 start_time = time.time()

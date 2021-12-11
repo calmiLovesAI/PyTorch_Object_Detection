@@ -1,16 +1,17 @@
 Train:
+  start_epoch: 0
   epochs: 100
   batch_size: 8
   learning_rate: 0.001
   input_size: 384
   # "voc" or "coco"
   dataset_name: "voc"
-  max_num_boxes: 20
+  max_num_boxes: 30
   save_path: "./saved_model/"
   save_frequency: 1
   test_during_training: True
   load_weights: False
-  resume_training_from_epoch: 0
+  pretrained_weights: ""
   tensorboard_on: True
   test_pictures:
     - ""
@@ -18,6 +19,7 @@ Train:
   video_save_dir: ""
   save_video: True
 Model:
+  name: "CenterNet"
   num_classes: 20
   # "dla": 4
   downsampling_ratio: 4

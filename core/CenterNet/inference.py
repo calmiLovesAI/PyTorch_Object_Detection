@@ -1,7 +1,6 @@
 import torch
 
 from core.CenterNet.loss import RegL1Loss
-from utils.heatmap import visualize_heatmap
 from utils.tools import reverse_letter_box
 
 

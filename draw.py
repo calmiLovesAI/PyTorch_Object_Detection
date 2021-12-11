@@ -1,9 +1,11 @@
 import math
 import cv2
 
+from utils.tools import find_class_name
+
 
 class Draw:
-    def __init__(self, cfg):
+    def __init__(self, cfg=None):
         self.cfg = cfg
         # r, g, b
         self.colors = {
@@ -40,14 +42,6 @@ class Draw:
         r = math.ceil(r) * 0.5
         return d, r
 
-    def _find_class_name(self, class_index):
-        if self.cfg["Train"]["dataset_name"] == "voc":
-            class_name_list = self.cfg["VOC"]["classes"]
-            return class_name_list[class_index]
-        if self.cfg["Train"]["dataset_name"] == "coco":
-            class_name_list = self.cfg["COCO"]["classes"]
-            return class_name_list[class_index]
-
     def draw_boxes_on_image(self, image_path, boxes, scores, classes):
         image = cv2.imread(image_path)
         h, w, _ = image.shape
@@ -56,9 +50,14 @@ class Draw:
 
         num_boxes = boxes.shape[0]
         for i in range(num_boxes):
-            class_and_score = str(self._find_class_name(classes[i])) + ": {:.2f}".format(scores[i])
-            # 获取类别对应的颜色
-            bbox_color = self._get_rgb_color(classes[i])
+            if self.cfg is not None:
+                class_and_score = str(find_class_name(self.cfg, classes[i])) + ": {:.2f}".format(scores[i])
+                # 获取类别对应的颜色
+                bbox_color = self._get_rgb_color(classes[i])
+            else:
+                class_and_score = classes[i][0] + ": {:.2f}".format(scores[i])
+                # 获取类别对应的颜色
+                bbox_color = self._get_rgb_color(classes[i][1])
             bbox_color_bgr = bbox_color[::-1]
             cv2.rectangle(img=image, pt1=(boxes[i, 0], boxes[i, 1]), pt2=(boxes[i, 2], boxes[i, 3]),
                           color=bbox_color_bgr,

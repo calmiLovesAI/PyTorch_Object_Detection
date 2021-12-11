@@ -118,3 +118,16 @@ class MeanMetric:
 
     def reset(self):
         self.__init__()
+
+
+def find_class_name(cfg, class_index, keep_index=False):
+    if cfg["Train"]["dataset_name"] == "voc":
+        class_name_list = cfg["VOC"]["classes"]
+        if keep_index:
+            return class_name_list[class_index], class_index
+        return class_name_list[class_index]
+    if cfg["Train"]["dataset_name"] == "coco":
+        class_name_list = cfg["COCO"]["classes"]
+        if keep_index:
+            return class_name_list[class_index], class_index
+        return class_name_list[class_index]

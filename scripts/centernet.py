@@ -14,7 +14,7 @@ from core.CenterNet.loss import CombinedLoss
 from core.CenterNet.model import CenterNet
 from core.CenterNet.target_generator import TargetGenerator
 from draw import Draw
-from utils.tools import MeanMetric, letter_box, cv2_read_image
+from utils.tools import MeanMetric, letter_box, cv2_read_image, find_class_name
 from .template import ITrainer
 
 
@@ -148,14 +148,15 @@ class CenterNetTrainer(ITrainer):
             boxes, scores, classes = decoder(outputs)
         boxes = boxes.cpu().numpy()
         scores = scores.cpu().numpy()
-        classes = classes.cpu().numpy()
+        classes = classes.cpu().numpy().tolist()
+        classes = [find_class_name(self.cfg, c, keep_index=True) for c in classes]
         if print_on:
             print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
             print("boxes: ", boxes)
             print("scores: ", scores)
             print("classes: ", classes)
 
-        painter = Draw(self.cfg)
+        painter = Draw()
         image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
 
         if save_result:

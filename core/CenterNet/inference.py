@@ -1,6 +1,7 @@
 import torch
 
 from core.CenterNet.loss import RegL1Loss
+from utils.heatmap import visualize_heatmap
 from utils.tools import reverse_letter_box
 
 
@@ -28,6 +29,7 @@ class Decode:
         heatmap = torch.sigmoid(heatmap)
         batch_size = heatmap.size()[0]
         heatmap = Decode._nms(heatmap)
+        # visualize_heatmap(image_path="./detect/1.jpg", heatmap=heatmap, output_dir="./detect/results.jpg", channel_format="first")
         scores, inds, clses, ys, xs = Decode._top_k(scores=heatmap, k=self.K)
         if reg is not None:
             reg = RegL1Loss.gather_feat(feat=reg, ind=inds)

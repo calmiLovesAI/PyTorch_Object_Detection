@@ -16,8 +16,8 @@ if __name__ == '__main__':
     cfgs = ["centernet.yaml", "yolov3.yaml", "yolov4.yaml"]
     model_name = model_names[0]
     config = cfgs[0]
-    mode = "train"  # "train" or "test"
-    model_filename = ""
+    mode = "test"  # "train" or "test"
+    model_filename = "centernet_epoch_100.pth"
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("PyTorch version: {}, Device: {}".format(torch.__version__, device))

@@ -10,7 +10,7 @@ class Decode:
         初始化参数
         :param cfg:
         :param original_image_size: [h, w]
-        :param input_image_size: int
+        :param input_image_size: int, CenterNet网络输入图片的固定大小
         """
         self.device = cfg["device"]
         self.K = cfg["Decode"]["max_boxes_per_img"]

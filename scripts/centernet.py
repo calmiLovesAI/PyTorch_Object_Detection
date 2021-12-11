@@ -14,7 +14,7 @@ from core.CenterNet.loss import CombinedLoss
 from core.CenterNet.model import CenterNet
 from core.CenterNet.target_generator import TargetGenerator
 from draw import Draw
-from utils.tools import MeanMetric, letter_box
+from utils.tools import MeanMetric, letter_box, cv2_read_image
 from .template import ITrainer
 
 
@@ -135,9 +135,7 @@ class CenterNetTrainer(ITrainer):
             print("检测图片{}用时：{:.4f}s".format(image, time.time() - start_time))
 
     def _test_pipeline(self, image_path, save_dir=None, print_on=True, save_result=True, *args, **kwargs):
-        image = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        h, w, c = image.shape
+        image, h, w, c = cv2_read_image(image_path)
         image, _, _ = letter_box(image, (self.input_size, self.input_size))
         image = to_tensor(image)
         image = torch.unsqueeze(image, dim=0)

@@ -11,7 +11,7 @@ class Decode:
         初始化参数
         :param cfg:
         :param original_image_size: [h, w]
-        :param input_image_size: [H, W]
+        :param input_image_size: int
         """
         self.device = cfg["device"]
         self.K = cfg["Decode"]["max_boxes_per_img"]
@@ -29,22 +29,19 @@ class Decode:
         heatmap = torch.sigmoid(heatmap)
         batch_size = heatmap.size()[0]
         heatmap = Decode._nms(heatmap)
-        # visualize_heatmap(image_path="./detect/1.jpg", heatmap=heatmap, output_dir="./detect/results.jpg", channel_format="first")
         scores, inds, clses, ys, xs = Decode._top_k(scores=heatmap, k=self.K)
         if reg is not None:
             reg = RegL1Loss.gather_feat(feat=reg, ind=inds)
-            xs = torch.reshape(xs, shape=(batch_size, self.K)) + reg[:, :, 0]
+            xs = torch.reshape(xs, shape=(batch_size, self.K)) + reg[:, :, 0]   # shape: (batch_size, self.K)
             ys = torch.reshape(ys, shape=(batch_size, self.K)) + reg[:, :, 1]
         else:
             xs = torch.reshape(xs, shape=(batch_size, self.K)) + 0.5
             ys = torch.reshape(ys, shape=(batch_size, self.K)) + 0.5
-        wh = RegL1Loss.gather_feat(feat=wh, ind=inds)
+        wh = RegL1Loss.gather_feat(feat=wh, ind=inds)    # shape: (batch_size, self.K, 2)
         clses = torch.reshape(clses, (batch_size, self.K))
         scores = torch.reshape(scores, (batch_size, self.K))
-        bboxes = torch.cat(tensors=[xs.unsqueeze(-1) - wh[..., 0:1] / 2,
-                                    ys.unsqueeze(-1) - wh[..., 1:2] / 2,
-                                    xs.unsqueeze(-1) + wh[..., 0:1] / 2,
-                                    ys.unsqueeze(-1) + wh[..., 1:2] / 2], dim=-1)   # shape: (batch_size, self.K, 4)
+
+        bboxes = torch.cat(tensors=[xs.unsqueeze(-1), ys.unsqueeze(-1), wh], dim=-1)  # shape: (batch_size, self.K, 4)
 
         bboxes /= self.feature_size
         bboxes = torch.clamp(bboxes, min=0, max=1)
@@ -73,4 +70,5 @@ class Decode:
         pixel = torch.div(topk_inds, C, rounding_mode="floor")
         topk_ys = torch.div(pixel, W, rounding_mode="floor")    # 中心点的y坐标
         topk_xs = pixel % W    # 中心点的x坐标
-        return topk_scores, pixel, topk_clses, topk_ys, topk_xs
+        topk_inds = (topk_ys * W + topk_xs).to(torch.int32)
+        return topk_scores, topk_inds, topk_clses, topk_ys, topk_xs

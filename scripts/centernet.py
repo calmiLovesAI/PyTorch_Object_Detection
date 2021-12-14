@@ -14,7 +14,8 @@ from core.CenterNet.loss import CombinedLoss
 from core.CenterNet.model import CenterNet
 from core.CenterNet.target_generator import TargetGenerator
 from draw import Draw
-from utils.tools import MeanMetric, letter_box, cv2_read_image, find_class_name
+from utils.tools import MeanMetric, letter_box, cv2_read_image
+from dataset import find_class_name
 from .template import ITrainer
 
 

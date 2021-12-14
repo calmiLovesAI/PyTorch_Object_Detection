@@ -1,7 +1,7 @@
 import math
 import cv2
 
-from utils.tools import find_class_name
+from dataset import find_class_name
 
 
 class Draw:

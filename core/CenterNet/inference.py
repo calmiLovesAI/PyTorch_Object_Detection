@@ -1,6 +1,7 @@
 import torch
 
 from core.CenterNet.loss import RegL1Loss
+from utils.nms import diou_nms
 from utils.tools import reverse_letter_box
 
 
@@ -20,8 +21,13 @@ class Decode:
         self.downsampling_ratio = cfg["Model"]["downsampling_ratio"]
         self.feature_size = self.input_image_size / self.downsampling_ratio
         self.score_threshold = cfg["Decode"]["score_threshold"]
+        self.use_nms = cfg["Decode"]["use_nms"]
 
     def __call__(self, outputs):
+        """
+        :param outputs: CenterNet网络输出的feature map
+        :return: list of torch.Tensor, shape: [torch.Size([N, 4]) torch.Size([N]) torch.Size([N])]
+        """
         heatmap = outputs[..., :self.num_classes]
         reg = outputs[..., self.num_classes: self.num_classes + 2]
         wh = outputs[..., -2:]
@@ -52,10 +58,19 @@ class Decode:
         bboxes = bboxes[score_mask]
         scores = scores[score_mask]
         clses = clses[score_mask]
+        if self.use_nms:
+            indices = diou_nms(boxes=bboxes, scores=scores, iou_threshold=self.score_threshold)
+            bboxes, scores, clses = bboxes[indices], scores[indices], clses[indices]
         return bboxes, scores, clses
 
     @staticmethod
     def _nms(heatmap, pool_size=3):
+        """
+        消除8邻域内的其它峰值点
+        :param heatmap:
+        :param pool_size:
+        :return:
+        """
         hmax = torch.nn.MaxPool2d(kernel_size=pool_size, stride=1, padding=((pool_size - 1) // 2))(heatmap)
         keep = torch.eq(heatmap, hmax).to(torch.float32)
         return heatmap * keep

@@ -1,5 +1,5 @@
-# YOLO_Series
-YOLOv3, YOLOv4, YOLOv5, YOLOX的PyTorch实现。（持续更新中......）
+# SkeNetch
+SkeNetch, which means Sketch Network, is a deep learning tool based on PyTorch.
 
 # Quick start
 1. Make sure that you have installed PyTorch 1.10.0 and torchvision 0.11.1 or higher.
@@ -29,20 +29,20 @@ pip install -r requirements.txt
 ```
 5. Modify the configuration file under the `experiments` folder according to your needs.
 6. Change the `CONFIG` parameter in `setup.py`, and then run `setup.py` to start training or detect multiple pictures at once.
-# 运行结果(Results)
+# Results
 1. YoloV3 on VOC<br>
 ![测试图片1.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample1.jpg?raw=True)
 ![测试图片2.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample2.jpg?raw=true)
 ![测试图片3.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample3.jpg?raw=true)
 ![测试图片4.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample4.jpg?raw=true)
 # TODO list
-1. 训练和测试代码
+1. Training and predicting code
 - [x] Yolo_v3
 - [x] Yolo_v4
 - [ ] Yolo_v5
 - [ ] Yolo_X
 - [x] CenterNet
-2. 发布在COCO数据集上训练好的模型
+2. Release models trained on COCO
 - [ ] Yolo_v3
 - [ ] Yolo_v4
 - [ ] Yolo_v5

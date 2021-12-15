@@ -1,7 +1,7 @@
 # SkeNetch
+SkeNetch，即Sketch Network，是一个基于PyTorch的深度学习工具。 SkeNetch 实现了一些深度学习算法，帮助用户快速训练、测试和部署网络模型。<br>
 SkeNetch, which means Sketch Network, is a deep learning tool based on PyTorch.
-SkeNetch implements some deep learning algorithms and provides easy-to-use APIs 
-to help users quickly train, test, and deploy network models.
+SkeNetch implements some deep learning algorithms to help users quickly train, test, and deploy network models.
 # Quick start
 1. Make sure that you have installed PyTorch 1.10.0 and torchvision 0.11.1 or higher.
 2. Run the following to install dependencies.
@@ -29,7 +29,7 @@ pip install -r requirements.txt
         |-- SegmentationObject
 ```
 5. Modify the configuration file under the `experiments` folder according to your needs.
-6. Change the `CONFIG` parameter in `setup.py`, and then run `setup.py` to start training or detect multiple pictures at once.
+6. Change the `CONFIG` parameter in `launcher.py`, and then run `launcher.py` to start training or detect multiple pictures at once.
 # Results
 1. YoloV3 on VOC<br>
 ![测试图片1.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample1.jpg?raw=True)

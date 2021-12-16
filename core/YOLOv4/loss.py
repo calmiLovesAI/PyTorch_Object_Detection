@@ -60,11 +60,12 @@ def make_label(cfg, target):
 
 
 class YoloLoss:
-    def __init__(self, cfg):
+    def __init__(self, cfg, ciou=True):
         self.cfg = cfg
         self.device = cfg["device"]
         self.strides = cfg["Model"]["yolo_strides"]
         self.ignore_threshold = cfg["Loss"]["ignore_threshold"]
+        self.ciou = ciou
 
     @staticmethod
     def __tensor_or(x, dim):
@@ -76,7 +77,7 @@ class YoloLoss:
     def __call__(self, pred, target):
         batch_size = pred[0].size()[0]
         total_loss = 0
-        batch_giou_loss = 0
+        batch_ciou_loss = 0
         batch_conf_loss = 0
         batch_prob_loss = 0
         for i in range(3):
@@ -96,10 +97,12 @@ class YoloLoss:
             pred_xywh = pred_bbox[..., 0:4]
 
             bbox_loss_scale = 2.0 - label_xywh[..., 2:3] * label_xywh[..., 3:4]
-            # ciou = torch.unsqueeze(box_ciou_xywh(boxes1=pred_xywh, boxes2=label_xywh), dim=-1)
-            # ciou_loss = label_conf * bbox_loss_scale * (1 - ciou)
-            giou = torch.unsqueeze(box_giou_xywh(boxes1=pred_xywh, boxes2=label_xywh), dim=-1)
-            giou_loss = label_conf * bbox_loss_scale * (1 - giou)
+            if self.ciou:
+                ciou = torch.unsqueeze(box_ciou_xywh(boxes1=pred_xywh, boxes2=label_xywh), dim=-1)
+                ciou_loss = label_conf * bbox_loss_scale * (1 - ciou)
+            else:
+                ciou = torch.unsqueeze(box_giou_xywh(boxes1=pred_xywh, boxes2=label_xywh), dim=-1)
+                ciou_loss = label_conf * bbox_loss_scale * (1 - ciou)
 
             iou_over_threshold_mask = torch.zeros(N, H, W, 3, dtype=torch.float32, device=self.device)
             for b in range(N):
@@ -125,9 +128,9 @@ class YoloLoss:
             prob_loss = label_conf * F.binary_cross_entropy_with_logits(input=raw_prob, target=label_prob,
                                                                         reduction="none")
 
-            batch_giou_loss += torch.sum(giou_loss) / batch_size
+            batch_ciou_loss += torch.sum(ciou_loss) / batch_size
             batch_conf_loss += torch.sum(conf_loss) / batch_size
             batch_prob_loss += torch.sum(prob_loss) / batch_size
-            total_loss += (batch_giou_loss + batch_conf_loss + batch_prob_loss)
+            total_loss += (batch_ciou_loss + batch_conf_loss + batch_prob_loss)
 
-        return total_loss, batch_giou_loss, batch_conf_loss, batch_prob_loss
+        return total_loss, batch_ciou_loss, batch_conf_loss, batch_prob_loss

@@ -136,8 +136,8 @@ def box_giou(boxes1, boxes2):
     enclose_wh = torch.clamp(enclose_wh, min=0)
     # 闭包面积
     area_enclose = enclose_wh[..., 0] * enclose_wh[..., 1]
-    giou = iou - (area_enclose - union_area) / area_enclose
-    return giou
+    giou = iou - (area_enclose - union_area) / torch.clamp(area_enclose, min=eps)
+    return torch.clamp(giou, min=-1.0, max=1.0)
 
 
 def box_giou_xywh(boxes1, boxes2):

@@ -20,7 +20,7 @@ class CenterNetCFG:
         return CenterNetTrainer(cfg)
 
 
-class YOLOv3:
+class YOLOv3CFG:
     name = "yolov3"
     cfg_file = "yolov3.yaml"
 
@@ -29,7 +29,7 @@ class YOLOv3:
         return Yolo3Trainer(cfg)
 
 
-class YOLOv4:
+class YOLOv4CFG:
     name = "yolov4"
     cfg_file = "yolov4.yaml"
 
@@ -39,7 +39,7 @@ class YOLOv4:
 
 
 if __name__ == '__main__':
-    model = CenterNetCFG
+    model = YOLOv4CFG
 
     model_name = model.name
     config = model.cfg_file

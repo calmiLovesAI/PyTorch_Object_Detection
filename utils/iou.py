@@ -109,3 +109,46 @@ def box_ciou_xywh(boxes1, boxes2):
                          dim=-1),
         boxes2=torch.cat(tensors=(boxes2[..., 0:2] - 0.5 * boxes2[..., 2:4], boxes2[..., 0:2] + 0.5 * boxes2[..., 2:4]),
                          dim=-1))
+
+
+def box_giou(boxes1, boxes2):
+    """
+    计算boxes1与boxes2之间的ciou，boxes1是预测值，boxes2是真实值
+    :param boxes1: Tensor, shape: (..., 4 (xmin, ymin, xmax, ymax))
+    :param boxes2: Tensor, shape: (..., 4 (xmin, ymin, xmax, ymax))
+    :return:
+    """
+    # iou
+    box_1_area = (boxes1[..., 2] - boxes1[..., 0]) * (boxes1[..., 3] - boxes1[..., 1])
+    box_2_area = (boxes2[..., 2] - boxes2[..., 0]) * (boxes2[..., 3] - boxes2[..., 1])
+    intersect_min = torch.maximum(boxes1[..., 0:2], boxes2[..., 0:2])
+    intersect_max = torch.minimum(boxes1[..., 2:4], boxes2[..., 2:4])
+    intersect_wh = intersect_max - intersect_min
+    intersect_wh = torch.clamp(intersect_wh, min=0)
+    intersect_area = intersect_wh[..., 0] * intersect_wh[..., 1]
+    union_area = box_1_area + box_2_area - intersect_area
+    iou = intersect_area / torch.clamp(union_area, min=eps)
+
+    # 闭包
+    enclose_left_up = torch.minimum(boxes1[..., 0:2], boxes2[..., 0:2])
+    enclose_right_down = torch.maximum(boxes1[..., 2:4], boxes2[..., 2:4])
+    enclose_wh = enclose_right_down - enclose_left_up
+    enclose_wh = torch.clamp(enclose_wh, min=0)
+    # 闭包面积
+    area_enclose = enclose_wh[..., 0] * enclose_wh[..., 1]
+    giou = iou - (area_enclose - union_area) / area_enclose
+    return giou
+
+
+def box_giou_xywh(boxes1, boxes2):
+    """
+    计算boxes1与boxes2之间的ciou值
+    :param boxes1: Tensor, shape: (..., 4 (cx, cy, w, h))
+    :param boxes2: Tensor, shape: (..., 4 (cx, cy, w, h))
+    :return:
+    """
+    return box_giou(
+        boxes1=torch.cat(tensors=(boxes1[..., 0:2] - 0.5 * boxes1[..., 2:4], boxes1[..., 0:2] + 0.5 * boxes1[..., 2:4]),
+                         dim=-1),
+        boxes2=torch.cat(tensors=(boxes2[..., 0:2] - 0.5 * boxes2[..., 2:4], boxes2[..., 0:2] + 0.5 * boxes2[..., 2:4]),
+                         dim=-1))

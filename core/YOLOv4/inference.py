@@ -88,8 +88,8 @@ class Decode:
         pred_xyxy = reverse_letter_box(h=self.image_h, w=self.image_w, input_size=self.input_size, boxes=pred_xywh)
         # 遮住那些不符合条件的预测框
         pred_xyxy = torch.cat(
-            tensors=(torch.max(pred_xyxy[:, :2], torch.tensor(data=(0, 0), dtype=torch.float32, device=self.device)),
-                     torch.min(pred_xyxy[:, 2:],
+            tensors=(torch.maximum(pred_xyxy[:, :2], torch.tensor(data=(0, 0), dtype=torch.float32, device=self.device)),
+                     torch.minimum(pred_xyxy[:, 2:],
                                torch.tensor(data=(self.image_w - 1, self.image_h - 1), dtype=torch.float32,
                                             device=self.device))),
             dim=-1)

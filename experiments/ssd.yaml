@@ -1,0 +1,85 @@
+Train:
+  start_epoch: 0
+  epochs: 100
+  batch_size: 8
+  learning_rate: 0.001
+  input_size: 300
+  # "voc" or "coco"
+  dataset_name: "voc"
+  max_num_boxes: 30
+  save_path: "./saved_model/"
+  save_frequency: 1
+  test_during_training: True
+  load_weights: False
+  pretrained_weights: ""
+  tensorboard_on: True
+  test_pictures:
+    - ""
+  video_dir: ""
+  video_save_dir: ""
+  save_video: True
+Loss:
+  alpha: 0.25
+  gamma: 2.0
+  reg_loss_weight: 0.5
+Model:
+  name: "SSD"
+  num_classes: 20
+  aspect_ratio:
+    -
+      - 2.0
+      - 0.5
+    -
+      - 2.0
+      - 0.5
+      - 3.0
+      - 1.0 / 3.0
+    -
+      - 2.0
+      - 0.5
+      - 3.0
+      - 1.0 / 3.0
+    -
+      - 2.0
+      - 0.5
+      - 3.0
+      - 1.0 / 3.0
+    -
+      - 2.0
+      - 0.5
+    -
+      - 2.0
+      - 0.5
+  downsampling_ratio:
+    - 8
+    - 16
+    - 32
+    - 64
+    - 100
+    - 300
+  feature_size:
+    - 38
+    - 19
+    - 10
+    - 5
+    - 3
+    - 1
+  default_boxes_sizes:
+    -
+      - 30
+      - 60
+    -
+      - 60
+      - 111
+    -
+      - 111
+      - 162
+    -
+      - 162
+      - 213
+    -
+      - 213
+      - 264
+    -
+      - 264
+      - 315

@@ -57,3 +57,4 @@ pip install -r requirements.txt
 - https://github.com/calmisential/YOLOv4_PyTorch
 - https://github.com/calmisential/CenterNet_TensorFlow2
 - https://github.com/xingyizhou/CenterNet
+- https://github.com/amdegroot/ssd.pytorch

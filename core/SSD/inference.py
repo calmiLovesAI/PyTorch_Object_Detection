@@ -19,7 +19,7 @@ class Decode:
         self.device = cfg["device"]
         self.priors = torch.from_numpy(DefaultBoxes(cfg).__call__()).to(self.device)
         self.top_k = cfg["Decode"]["max_num_output_boxes"]
-        self.num_classes = cfg["Model"]["num_classes"]
+        self.num_classes = cfg["Model"]["num_classes"] + 1
         self.variance = cfg["Loss"]["variance"]
         self.conf_thresh = cfg["Decode"]["confidence_threshold"]
         self.nms_thresh = cfg["Decode"]["nms_threshold"]
@@ -55,19 +55,26 @@ class Decode:
                 boxes = decoded_boxes[l_mask].view(-1, 4)
                 # 坐标变换到原始图片上
                 boxes = reverse_letter_box(h=self.original_image_size[0], w=self.original_image_size[1],
-                                            input_size=self.input_image_size, boxes=boxes)
+                                           input_size=self.input_image_size, boxes=boxes)
                 # 筛选出那些重叠度满足要求并且分数最大的boxes
                 ids = diou_nms(boxes=boxes, scores=scores, iou_threshold=self.nms_thresh)
                 count = ids.numel()
-                detections[i, cl, :count] = \
-                    torch.cat((scores[ids[:count]].unsqueeze(1),
-                               boxes[ids[:count]]), 1)
+                # 保证最多不超过self.top_k个输出boxes
+                n = min(count, self.top_k)
+                ids = ids[:n]
+                # 将检测结果concat在一起，detections最后一个维度长度是5(score, xmin, ymin, xmax, ymax)
+                detections[i, cl, :n] = \
+                    torch.cat((scores[ids[:n]].unsqueeze(1),
+                               boxes[ids[:n]]), dim=-1)
         flt = detections.contiguous().view(batch_size, -1, 5)
-        _, idx = flt[:, :, 0].sort(1, descending=True)
-        _, rank = idx.sort(1)
-        flt[(rank < self.top_k).unsqueeze(-1).expand_as(flt)].fill_(0)
+        _, idx = flt[:, :, 0].sort(1, descending=True)  # idx shape: (batch_size, self.num_classes * self.top_k)
+        # rank表示这个位置的box按照score从大到小排序之后应该排在哪个位置
+        _, rank = idx.sort(1)  # rank shape: (batch_size, self.num_classes * self.top_k)
+        # 只保留前self.top_k个检测框
+        flt[(rank >= self.top_k).unsqueeze(-1).expand_as(flt)] = 0
 
-        pred_bboxes = torch.zeros(batch_size * self.num_classes * self.top_k, 4, dtype=torch.float32, device=self.device)
+        pred_bboxes = torch.zeros(batch_size * self.num_classes * self.top_k, 4, dtype=torch.float32,
+                                  device=self.device)
         pred_scores = torch.zeros(batch_size * self.num_classes * self.top_k, dtype=torch.float32, device=self.device)
         pred_clses = torch.zeros(batch_size * self.num_classes * self.top_k, dtype=torch.float32, device=self.device)
 
@@ -75,10 +82,10 @@ class Decode:
         for b in range(batch_size):
             for i in range(detections.size()[1]):
                 j = 0
-                while detections[b, i, j, 0] >= 0.6:
+                while detections[b, i, j, 0] >= self.conf_thresh:
                     pred_scores[pred_num] = detections[b, i, j, 0]
                     pred_bboxes[pred_num] = detections[b, i, j, 1:]
-                    pred_clses[pred_num] = i-1
+                    pred_clses[pred_num] = i - 1
                     pred_num += 1
                     j += 1
 
@@ -86,5 +93,3 @@ class Decode:
         pred_scores = pred_scores[:pred_num]
         pred_clses = pred_clses[:pred_num].to(torch.int32)
         return pred_bboxes, pred_scores, pred_clses
-
-

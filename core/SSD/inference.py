@@ -16,7 +16,7 @@ class Decode:
             input_image_size: int, 输入SSD的图片的固定大小
         """
         self.device = cfg["device"]
-        self.priors = DefaultBoxes(cfg).__call__()
+        self.priors = torch.from_numpy(DefaultBoxes(cfg).__call__()).to(self.device)
         self.top_k = cfg["Decode"]["max_num_output_boxes"]
         self.num_classes = cfg["Model"]["num_classes"]
         self.variance = cfg["Loss"]["variance"]

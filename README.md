@@ -2,6 +2,12 @@
 SkeNetch，即Sketch Network，是一个基于PyTorch的深度学习工具。 SkeNetch 实现了一些深度学习算法，帮助用户快速训练、测试和部署网络模型。<br>
 SkeNetch, which means Sketch Network, is a deep learning tool based on PyTorch.
 SkeNetch implements some deep learning algorithms to help users quickly train, test, and deploy network models.
+# Algorithms that have been implemented.
+| Algorithms | Pretrained models | Paper                             |
+|------------|-------------------|-----------------------------------|
+| YOLOv3     |                   | https://arxiv.org/abs/1804.02767  |
+| CenterNet  | [VOC](https://github.com/calmisential/SkeNetch/releases/download/Weights/CenterNet_voc_epoch_200.pth)           | https://arxiv.org/abs/1904.07850|
+| SSD        |                   | https://arxiv.org/abs/1512.02325  |
 # Quick start
 1. Make sure that you have installed PyTorch 1.10.0 and torchvision 0.11.1 or higher.
 2. Run the following to install dependencies.
@@ -36,19 +42,6 @@ pip install -r requirements.txt
 ![测试图片2.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample2.jpg?raw=true)
 ![测试图片3.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample3.jpg?raw=true)
 ![测试图片4.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample4.jpg?raw=true)
-# TODO list
-1. Training and predicting code
-- [x] Yolo_v3
-- [x] Yolo_v4
-- [ ] Yolo_v5
-- [ ] Yolo_X
-- [x] CenterNet
-2. Release models trained on COCO
-- [ ] Yolo_v3
-- [ ] Yolo_v4
-- [ ] Yolo_v5
-- [ ] Yolo_X
-- [ ] CenterNet
 
 # References
 - https://github.com/hunglc007/tensorflow-yolov4-tflite

@@ -8,6 +8,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision.transforms.functional import to_tensor
 
 from core.SSD.dataloader import TrainLoader
+from core.SSD.inference import Decode
 from core.SSD.loss import MultiBoxLoss
 from core.SSD.model import SSD
 from draw import Draw
@@ -145,4 +146,31 @@ class SSDTrainer(ITrainer):
             print("检测图片{}用时：{:.4f}s".format(image, time.time() - start_time))
 
     def _test_pipeline(self, image_path, save_dir=None, print_on=True, save_result=True, *args, **kwargs):
-        pass
+        image, h, w, c = cv2_read_image(image_path)
+        image, _, _ = letter_box(image, (self.input_size, self.input_size))
+        image = to_tensor(image)
+        image = torch.unsqueeze(image, dim=0)
+        image = image.to(device=self.device)
+
+        with torch.no_grad():
+            outputs = self.model(image)
+            decoder = Decode(self.cfg, [h, w], self.input_size)
+            boxes, scores, classes = decoder(outputs)
+        boxes = boxes.cpu().numpy()
+        scores = scores.cpu().numpy()
+        classes = classes.cpu().numpy().tolist()
+        classes = [find_class_name(self.cfg, c, keep_index=True) for c in classes]
+        if print_on:
+            print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
+            print("boxes: ", boxes)
+            print("scores: ", scores)
+            print("classes: ", classes)
+
+        painter = Draw()
+        image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
+
+        if save_result:
+            # 保存检测结果
+            cv2.imwrite(save_dir, image_with_boxes)
+        else:
+            return image_with_boxes

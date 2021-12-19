@@ -27,6 +27,10 @@ Loss:
   variance:
     - 0.1
     - 0.2
+Decode:
+  max_num_output_boxes: 100
+  nms_threshold: 0.5
+  confidence_threshold: 0.1
 Model:
   name: "SSD"
   num_classes: 20

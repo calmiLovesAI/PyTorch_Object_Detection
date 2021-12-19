@@ -2,7 +2,8 @@ import torch
 import torch.nn.functional as F
 
 from core.SSD.anchor import DefaultBoxes
-from core.SSD.loss import decode, nms
+from core.SSD.loss import decode
+from utils.nms import diou_nms
 from utils.tools import reverse_letter_box
 
 
@@ -56,7 +57,8 @@ class Decode:
                 boxes = reverse_letter_box(h=self.original_image_size[0], w=self.original_image_size[1],
                                             input_size=self.input_image_size, boxes=boxes)
                 # 筛选出那些重叠度满足要求并且分数最大的boxes
-                ids, count = nms(boxes, scores, self.nms_thresh, self.top_k)
+                ids = diou_nms(boxes=boxes, scores=scores, iou_threshold=self.nms_thresh)
+                count = ids.numel()
                 detections[i, cl, :count] = \
                     torch.cat((scores[ids[:count]].unsqueeze(1),
                                boxes[ids[:count]]), 1)

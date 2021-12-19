@@ -3,11 +3,11 @@ SkeNetch，即Sketch Network，是一个基于PyTorch的深度学习工具。 Sk
 SkeNetch, which means Sketch Network, is a deep learning tool based on PyTorch.
 SkeNetch implements some deep learning algorithms to help users quickly train, test, and deploy network models.
 # Algorithms that have been implemented.
-| Algorithms | Pretrained models | Paper                             |
-|------------|-------------------|-----------------------------------|
-| YOLOv3     |                   | https://arxiv.org/abs/1804.02767  |
-| CenterNet  | [VOC](https://github.com/calmisential/SkeNetch/releases/download/Weights/CenterNet_voc_epoch_200.pth)           | https://arxiv.org/abs/1904.07850|
-| SSD        |                   | https://arxiv.org/abs/1512.02325  |
+| Algorithm | Pretrained models | Paper                             |
+|-----------|-------------------|-----------------------------------|
+| YOLOv3    |                   | https://arxiv.org/abs/1804.02767  |
+| CenterNet | [VOC](https://github.com/calmisential/SkeNetch/releases/download/Weights/CenterNet_voc_epoch_200.pth)           | https://arxiv.org/abs/1904.07850|
+| SSD       |                   | https://arxiv.org/abs/1512.02325  |
 # Quick start
 1. Make sure that you have installed PyTorch 1.10.0 and torchvision 0.11.1 or higher.
 2. Run the following to install dependencies.

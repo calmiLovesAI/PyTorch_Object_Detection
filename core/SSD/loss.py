@@ -58,8 +58,9 @@ class MultiBoxLoss:
         loss_c = log_sum_exp(batch_conf) - batch_conf.gather(1, conf_t.view(-1, 1))
 
         # Hard Negative Mining
+        loss_c = torch.reshape(loss_c, shape=(batch_size, -1))
         loss_c[pos] = 0
-        loss_c = loss_c.view(batch_size, -1)
+        loss_c = torch.reshape(loss_c, shape=(batch_size, -1))
         _, loss_idx = loss_c.sort(1, descending=True)
         _, idx_rank = loss_idx.sort(1)
         num_pos = pos.long().sum(1, keepdim=True)
@@ -185,7 +186,8 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx):
     for j in range(best_prior_idx.size(0)):
         best_truth_idx[best_prior_idx[j]] = j
     matches = truths[best_truth_idx]  # Shape: [num_priors,4]
-    conf = labels[best_truth_idx] + 1  # Shape: [num_priors]
+    # conf = labels[best_truth_idx] + 1  # Shape: [num_priors]
+    conf = labels[best_truth_idx]
     conf[best_truth_overlap < threshold] = 0  # label as background
     loc = encode(matches, priors, variances)
     loc_t[idx] = loc  # [num_priors,4] encoded offsets to learn

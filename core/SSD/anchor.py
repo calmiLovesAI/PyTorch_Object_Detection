@@ -20,7 +20,7 @@ class DefaultBoxes:
     def __call__(self, *args, **kwargs):
         boxes = []
         for k, f in enumerate(self.output_feature_sizes):
-            for i, j in product(range(f[0]), repeat=2):
+            for i, j in product(range(f), repeat=2):
                 f_k = self.image_size / self.steps[k]
                 # box中心点的坐标
                 center_x = (j + 0.5) / f_k

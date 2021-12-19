@@ -3,7 +3,7 @@ from datetime import datetime
 import torch
 
 from load_yaml import load_yamls
-from scripts import CenterNetTrainer, Yolo3Trainer, Yolo4Trainer
+from scripts import CenterNetTrainer, Yolo3Trainer, Yolo4Trainer, SSDTrainer
 
 
 def get_time_format():
@@ -38,8 +38,17 @@ class YOLOv4CFG:
         return Yolo4Trainer(cfg)
 
 
+class SSDCFG:
+    name = "ssd"
+    cfg_file = "ssd.yaml"
+
+    @staticmethod
+    def get_trainer(cfg):
+        return SSDTrainer(cfg)
+
+
 if __name__ == '__main__':
-    model = YOLOv4CFG
+    model = SSDCFG
 
     model_name = model.name
     config = model.cfg_file

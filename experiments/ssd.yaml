@@ -22,6 +22,11 @@ Loss:
   alpha: 0.25
   gamma: 2.0
   reg_loss_weight: 0.5
+  overlap_thresh: 0.5
+  neg_pos: 3
+  variance:
+    - 0.1
+    - 0.2
 Model:
   name: "SSD"
   num_classes: 20

@@ -81,8 +81,8 @@ class Decode:
                     j += 1
 
         pred_bboxes = pred_bboxes[:pred_num]
-        pred_scores = pred_bboxes[:pred_num]
-        pred_clses = pred_clses[:pred_num]
+        pred_scores = pred_scores[:pred_num]
+        pred_clses = pred_clses[:pred_num].to(torch.int32)
         return pred_bboxes, pred_scores, pred_clses
 
 

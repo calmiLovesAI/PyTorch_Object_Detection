@@ -14,7 +14,7 @@ Train:
   pretrained_weights: ""
   tensorboard_on: True
   test_pictures:
-    - ""
+    - "./detect/1.jpg"
   video_dir: ""
   video_save_dir: ""
   save_video: True

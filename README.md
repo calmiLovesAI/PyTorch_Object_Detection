@@ -43,7 +43,7 @@ pip install -r requirements.txt
 ![测试图片3.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample3.jpg?raw=true)
 ![测试图片4.jpg](https://github.com/calmisential/YOLO_Series/blob/main/assets/yolov3_voc_sample4.jpg?raw=true)
 
-# References
+# Acknowledgements
 - https://github.com/hunglc007/tensorflow-yolov4-tflite
 - https://github.com/amdegroot/ssd.pytorch code for processing COCO dataset
 - https://github.com/ultralytics/yolov5
@@ -51,3 +51,4 @@ pip install -r requirements.txt
 - https://github.com/calmisential/CenterNet_TensorFlow2
 - https://github.com/xingyizhou/CenterNet
 - https://github.com/amdegroot/ssd.pytorch
+- https://www.bilibili.com/video/BV1vK411H771?p=5

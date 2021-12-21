@@ -154,13 +154,12 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx):
     corresponding to both confidence and location preds.
     Args:
         threshold: (float) The overlap threshold used when mathing boxes.
-        truths: (tensor) Ground truth boxes, Shape: [num_obj, num_priors].
+        truths: (tensor) Ground truth boxes, Shape: [num_obj, 4].
         priors: (tensor) Prior boxes from priorbox layers, Shape: [n_priors,4].
-        variances: (tensor) Variances corresponding to each prior coord,
-            Shape: [num_priors, 4].
+        variances: (list) Variances corresponding to each prior coord.
         labels: (tensor) All the class labels for the image, Shape: [num_obj].
-        loc_t: (tensor) Tensor to be filled w/ endcoded location targets.
-        conf_t: (tensor) Tensor to be filled w/ matched indices for conf preds.
+        loc_t: (tensor) Tensor to be filled with endcoded location targets.
+        conf_t: (tensor) Tensor to be filled with matched indices for conf preds.
         idx: (int) current batch index
     Return:
         The matched indices corresponding to 1)location and 2)confidence preds.

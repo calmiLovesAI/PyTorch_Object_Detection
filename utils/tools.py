@@ -24,17 +24,21 @@ def letter_box(image, size):
     return new_image, scale, [top, bottom, left, right]
 
 
-def reverse_letter_box(h, w, input_size, boxes):
+def reverse_letter_box(h, w, input_size, boxes, xywh=True):
     """
 
     :param h: 输入网络的图片的原始高度
     :param w: 输入网络的图片的原始宽度
     :param input_size: 网络的固定输入图片大小
     :param boxes: Tensor, shape: (..., 4(cx, cy, w, h))
+    :param xywh: Boolean, True：boxes是(cx, cy, w, h)格式, False: boxes是(xmin, ymin, xmax, ymax)格式
     :return: Tensor, shape: (..., 4(xmin, ymin, xmax, ymax))
     """
     # 转换为(xmin, ymin, xmax, ymax)格式
-    new_boxes = torch.cat((boxes[..., 0:2] - boxes[..., 2:4] / 2, boxes[..., 0:2] + boxes[..., 2:4] / 2), dim=-1)
+    if xywh:
+        new_boxes = torch.cat((boxes[..., 0:2] - boxes[..., 2:4] / 2, boxes[..., 0:2] + boxes[..., 2:4] / 2), dim=-1)
+    else:
+        new_boxes = boxes
     new_boxes *= input_size
 
     scale = max(h / input_size, w / input_size)

@@ -52,8 +52,8 @@ if __name__ == '__main__':
 
     model_name = model.name
     config = model.cfg_file
-    mode = "test"  # "train" or "test"
-    model_filename = "SSD_voc_epoch_100.pth"
+    mode = "train"  # "train" or "test"
+    model_filename = ""
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("PyTorch version: {}, Device: {}".format(torch.__version__, device))

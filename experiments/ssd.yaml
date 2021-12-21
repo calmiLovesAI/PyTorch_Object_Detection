@@ -14,7 +14,7 @@ Train:
   pretrained_weights: ""
   tensorboard_on: True
   test_pictures:
-    - "./detect/2.jpg"
+    - ""
   video_dir: ""
   video_save_dir: ""
   save_video: True
@@ -30,7 +30,7 @@ Loss:
 Decode:
   max_num_output_boxes: 100
   nms_threshold: 0.5
-  confidence_threshold: 0.7
+  confidence_threshold: 0.6
 Model:
   name: "SSD"
   num_classes: 20

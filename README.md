@@ -52,3 +52,4 @@ pip install -r requirements.txt
 - https://github.com/xingyizhou/CenterNet
 - https://github.com/amdegroot/ssd.pytorch
 - https://www.bilibili.com/video/BV1vK411H771?p=5
+- https://github.com/Megvii-BaseDetection/YOLOX

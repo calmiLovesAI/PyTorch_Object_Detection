@@ -7,7 +7,7 @@ def load_yaml(file):
         return yaml.load(f.read(), Loader=yaml.FullLoader)
 
 
-def load_yamls(model_yaml, device=None):
+def load_yamls(model_yaml, device=None, model_name=None):
     cfg = load_yaml(Path("./experiments").joinpath(model_yaml))
     if device:
         cfg["device"] = device

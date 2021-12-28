@@ -55,6 +55,14 @@ def reverse_letter_box(h, w, input_size, boxes, xywh=True):
     return new_boxes
 
 
+def direct_image_resize(image, size):
+    pass
+
+
+def reverse_direct_image_resize(h, w, input_size, boxes, xywh=True, coords_normalized=True):
+    pass
+
+
 def iou_2(anchors, boxes):
     if not isinstance(anchors, torch.Tensor):
         anchors = torch.tensor(anchors)

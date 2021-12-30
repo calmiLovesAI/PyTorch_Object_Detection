@@ -58,15 +58,15 @@ def get_specific_detection_results(dets, H, W, input_image_size):
         dets: torch.Tensor, shape: [N, 6(xmin, ymin, xmax, ymax, obj_conf, class_conf, class_pred)]
         H: 待检测的图片原始高度
         W: 待检测的图片原始宽度
-        input_image_size:
+        input_image_size: Int
 
     Returns:
 
     """
     assert dets.dim() == 2
-    dets = dets.cpu()
+    dets = dets
     boxes = reverse_direct_image_resize(h=H, w=W, input_size=input_image_size, boxes=dets[:, :4], xywh=False,
                                         coords_normalized=True)
     scores = dets[:, 4] * dets[:, 5]
     clses = dets[:, 6].to(torch.int32)
-    return boxes.numpy(), scores.numpy(), clses.numpy()
+    return boxes, scores, clses

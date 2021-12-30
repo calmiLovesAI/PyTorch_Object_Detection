@@ -8,3 +8,4 @@ __pycache__
 !/detect/README.md
 /runs/*
 test.py
+read_pth.py

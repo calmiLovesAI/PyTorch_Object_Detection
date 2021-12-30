@@ -58,10 +58,11 @@ class YoloXTrainer(ITrainer):
                     m.eps = 1e-3
                     m.momentum = 0.03
 
-        in_channels = [256, 512, 1024]
-        backbone = YOLOPAFPN(self.depth, self.width, in_channels=in_channels, act=self.act)
-        head = YOLOXHead(self.num_classes, self.width, in_channels=in_channels, act=self.act)
-        self.model = YOLOX(backbone, head)
+        if self.model is None:
+            in_channels = [256, 512, 1024]
+            backbone = YOLOPAFPN(self.depth, self.width, in_channels=in_channels, act=self.act)
+            head = YOLOXHead(self.num_classes, self.width, in_channels=in_channels, act=self.act)
+            self.model = YOLOX(backbone, head)
         self.model.apply(init_yolo)
         self.model.head.initialize_biases(1e-2)
 
@@ -72,9 +73,12 @@ class YoloXTrainer(ITrainer):
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode="min", patience=2)
 
     def _load(self, weights_path):
-        if self.model is None:
-            self._set_model()
-        self.model.load_state_dict(torch.load(weights_path, map_location=self.device))
+        assert self.model is None
+        in_channels = [256, 512, 1024]
+        backbone = YOLOPAFPN(self.depth, self.width, in_channels=in_channels, act=self.act)
+        head = YOLOXHead(self.num_classes, self.width, in_channels=in_channels, act=self.act)
+        self.model = YOLOX(backbone, head)
+        self.model.load_state_dict(torch.load(weights_path, map_location=self.device)["model"])
 
     def _save(self, epoch, save_entire_model=False):
         torch.save(self.model.state_dict(),
@@ -100,7 +104,7 @@ class YoloXTrainer(ITrainer):
 
     def _test_pipeline(self, image_path, save_dir=None, print_on=True, save_result=True, *args, **kwargs):
         image, h, w, c = cv2_read_image(image_path)
-        image, _, _ = direct_image_resize(image, (self.input_size, self.input_size))
+        image = direct_image_resize(image, (self.input_size, self.input_size))
         image = to_tensor(image)
         image = torch.unsqueeze(image, dim=0)
         image = image.to(device=self.device)

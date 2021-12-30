@@ -7,7 +7,7 @@ class BaseExp:
         self.learning_rate = 0.001
         self.input_size = 640
         # "voc" or "coco"
-        self.dataset_name = "voc"
+        self.dataset_name = "coco"
         self.max_num_boxes = 30
         self.save_path = "./saved_model/"
         self.save_frequency = 1

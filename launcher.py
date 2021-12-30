@@ -57,13 +57,13 @@ class YOLOxSCFG:
 
 
 if __name__ == '__main__':
-    model = SSDCFG
+    model = YOLOxSCFG
 
     model_name = model.name
     config = model.cfg_file
-    test_pictures = [""]
-    mode = "train"  # "train" or "test"
-    model_filename = ""
+    test_pictures = ["./detect/1.jpg"]
+    mode = "test"  # "train" or "test"
+    model_filename = "yolox_s.pth"
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("PyTorch version: {}, Device: {}".format(torch.__version__, device))

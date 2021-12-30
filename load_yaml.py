@@ -10,7 +10,7 @@ def load_yaml(file):
 
 def load_yamls(model_yaml, device=None, model_name=None):
     if model_name == "yolox_s":
-        return YoloxSCfg
+        return YoloxSCfg(device)
     cfg = load_yaml(Path("./experiments").joinpath(model_yaml))
     if device:
         cfg["device"] = device

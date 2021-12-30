@@ -81,6 +81,12 @@ class YoloXTrainer(ITrainer):
         if save_entire_model:
             torch.save(self.model, self.save_path + "{}_{}_entire_model.pth".format(self.model_name, self.dataset_name))
 
+    def _set_train_dataloader(self, *args, **kwargs):
+        pass
+
+    def train(self, *args, **kwargs):
+        pass
+
     def test(self, images, prefix, model_filename, load_model=False, *args, **kwargs):
         if load_model:
             self._load(weights_path=Path(self.save_path).joinpath(model_filename))

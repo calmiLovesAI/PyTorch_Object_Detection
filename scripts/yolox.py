@@ -4,6 +4,7 @@ from pathlib import Path
 
 import cv2
 import torch
+from torch import nn
 from torchvision.transforms.functional import to_tensor
 
 from core.YOLOX.inference import postprocess, get_specific_detection_results

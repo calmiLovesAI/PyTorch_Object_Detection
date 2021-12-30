@@ -101,7 +101,7 @@ class YoloXTrainer(ITrainer):
         with torch.no_grad():
             outputs = self.model(image)
             detections = postprocess(outputs, self.num_classes, self.conf_threshold, self.nms_threshold, class_agnostic=True)
-            boxes, scores, classes = get_specific_detection_results(detections, h, w, self.input_size)
+            boxes, scores, classes = get_specific_detection_results(detections[0], h, w, self.input_size)
         boxes = boxes.cpu().numpy()
         scores = scores.cpu().numpy()
         classes = classes.cpu().numpy().tolist()

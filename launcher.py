@@ -3,7 +3,7 @@ from datetime import datetime
 import torch
 
 from load_yaml import load_yamls
-from scripts import CenterNetTrainer, Yolo3Trainer, Yolo4Trainer, SSDTrainer
+from scripts import CenterNetTrainer, Yolo3Trainer, Yolo4Trainer, SSDTrainer, YoloXTrainer
 
 
 def get_time_format():
@@ -47,17 +47,27 @@ class SSDCFG:
         return SSDTrainer(cfg)
 
 
+class YOLOxSCFG:
+    name = "yolox_s"
+    cfg_file = "yolox_s.py"
+
+    @staticmethod
+    def get_trainer(cfg):
+        return YoloXTrainer(cfg)
+
+
 if __name__ == '__main__':
     model = SSDCFG
 
     model_name = model.name
     config = model.cfg_file
+    test_pictures = [""]
     mode = "train"  # "train" or "test"
     model_filename = ""
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("PyTorch version: {}, Device: {}".format(torch.__version__, device))
-    cfg = load_yamls(model_yaml=config, device=device)
+    cfg = load_yamls(model_yaml=config, device=device, model_name=model_name)
 
     print("Start {}ing {}.".format(mode, model_name))
 
@@ -65,7 +75,7 @@ if __name__ == '__main__':
     if mode == "train":
         trainer.train()
     elif mode == "test":
-        trainer.test(images=cfg["Train"]["test_pictures"], prefix=get_time_format(), model_filename=model_filename, load_model=True)
+        trainer.test(images=test_pictures, prefix=get_time_format(), model_filename=model_filename, load_model=True)
     else:
         raise ValueError
 

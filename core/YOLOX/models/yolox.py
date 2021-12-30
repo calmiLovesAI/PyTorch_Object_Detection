@@ -22,6 +22,15 @@ class YOLOX(nn.Module):
         self.head = head
 
     def forward(self, x, targets=None):
+        """
+
+        Args:
+            x:
+            targets:
+
+        Returns: torch.Tensor, shape: (batch_size, 8400, num_classes + 5)
+
+        """
         # fpn output content features of [dark3, dark4, dark5]
         fpn_outs = self.backbone(x)
 

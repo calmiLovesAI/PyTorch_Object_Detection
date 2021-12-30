@@ -113,22 +113,26 @@ class YoloXTrainer(ITrainer):
             outputs = self.model(image)
             detections = postprocess(outputs, self.num_classes, self.conf_threshold, self.nms_threshold, class_agnostic=True)
             boxes, scores, classes = get_specific_detection_results(detections[0], h, w, self.input_size)
-        boxes = boxes.cpu().numpy()
-        scores = scores.cpu().numpy()
-        classes = classes.cpu().numpy().tolist()
-        classes = [find_class_name(self.cfg, c, keep_index=True) for c in classes]
-        if print_on:
-            print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
-            print("boxes: ", boxes)
-            print("scores: ", scores)
-            print("classes: ", classes)
+        if boxes is not None:
+            boxes = boxes.cpu().numpy()
+            scores = scores.cpu().numpy()
+            classes = classes.cpu().numpy().tolist()
+            classes = [find_class_name(self.cfg, c, keep_index=True) for c in classes]
+            if print_on:
+                print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
+                print("boxes: ", boxes)
+                print("scores: ", scores)
+                print("classes: ", classes)
 
-        painter = Draw()
-        image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
+            painter = Draw()
+            image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
+        else:
+            image_with_boxes = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
 
         if save_result:
             # 保存检测结果
             cv2.imwrite(save_dir, image_with_boxes)
+            print("saved")
         else:
             return image_with_boxes
 

@@ -5,8 +5,7 @@ from dataset import find_class_name
 
 
 class Draw:
-    def __init__(self, cfg=None):
-        self.cfg = cfg
+    def __init__(self):
         # r, g, b
         self.colors = {
             "粉红": (255, 192, 203),
@@ -50,14 +49,14 @@ class Draw:
 
         num_boxes = boxes.shape[0]
         for i in range(num_boxes):
-            if self.cfg is not None:
-                class_and_score = str(find_class_name(self.cfg, classes[i])) + ": {:.2f}".format(scores[i])
-                # 获取类别对应的颜色
-                bbox_color = self._get_rgb_color(classes[i])
-            else:
-                class_and_score = classes[i][0] + ": {:.2f}".format(scores[i])
-                # 获取类别对应的颜色
-                bbox_color = self._get_rgb_color(classes[i][1])
+            # if self.cfg is not None:
+            #     class_and_score = str(find_class_name(self.cfg, classes[i])) + ": {:.2f}".format(scores[i])
+            #     # 获取类别对应的颜色
+            #     bbox_color = self._get_rgb_color(classes[i])
+            # else:
+            class_and_score = classes[i][0] + ": {:.2f}".format(scores[i])
+            # 获取类别对应的颜色
+            bbox_color = self._get_rgb_color(classes[i][1])
             bbox_color_bgr = bbox_color[::-1]
             cv2.rectangle(img=image, pt1=(boxes[i, 0], boxes[i, 1]), pt2=(boxes[i, 2], boxes[i, 3]),
                           color=bbox_color_bgr,

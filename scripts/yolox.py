@@ -8,6 +8,7 @@ from torch import nn
 from torchvision.transforms.functional import to_tensor
 
 from core.YOLOX.inference import postprocess, get_specific_detection_results
+from core.YOLOX.preprocess import resize_with_pad
 from dataset import find_class_name
 from draw import Draw
 from scripts.template import ITrainer
@@ -103,11 +104,14 @@ class YoloXTrainer(ITrainer):
             print("检测图片{}用时：{:.4f}s".format(image, time.time() - t0))
 
     def _test_pipeline(self, image_path, save_dir=None, print_on=True, save_result=True, *args, **kwargs):
-        image, h, w, c = cv2_read_image(image_path)
-        image = direct_image_resize(image, (self.input_size, self.input_size))
-        image = to_tensor(image)
-        image = torch.unsqueeze(image, dim=0)
-        image = image.to(device=self.device)
+        # image, h, w, c = cv2_read_image(image_path)
+        # image = direct_image_resize(image, (self.input_size, self.input_size))
+        # image = to_tensor(image)
+        # image = torch.unsqueeze(image, dim=0)
+        # image = image.to(device=self.device)
+        image, h, w, c = cv2_read_image(image_path, False, True)
+        image = resize_with_pad(image, (self.input_size, self.input_size))
+        image = torch.from_numpy(image).unsqueeze(0).to(torch.float32).to(device=self.device)
 
         with torch.no_grad():
             outputs = self.model(image)
@@ -117,7 +121,7 @@ class YoloXTrainer(ITrainer):
             boxes = boxes.cpu().numpy()
             scores = scores.cpu().numpy()
             classes = classes.cpu().numpy().tolist()
-            classes = [find_class_name(self.cfg, c, keep_index=True) for c in classes]
+            classes = [find_class_name(self.dataset_name, c, keep_index=True) for c in classes]
             if print_on:
                 print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
                 print("boxes: ", boxes)

@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
     model_name = model.name
     config = model.cfg_file
-    test_pictures = ["./detect/1.jpg"]
+    test_pictures = ["./detect/000000000049.jpg"]
     mode = "test"  # "train" or "test"
     model_filename = "yolox_s.pth"
 

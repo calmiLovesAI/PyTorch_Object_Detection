@@ -6,8 +6,9 @@ SkeNetch implements some deep learning algorithms to help users quickly train, t
 | Algorithm | Pretrained models | Paper                             |
 |-----------|-------------------|-----------------------------------|
 | YOLOv3    |                   | https://arxiv.org/abs/1804.02767  |
-| CenterNet | [VOC](https://github.com/calmisential/SkeNetch/releases/download/Weights/CenterNet_voc_epoch_200.pth)           | https://arxiv.org/abs/1904.07850|
+| CenterNet | [VOC](https://github.com/calmisential/SkeNetch/releases/download/Weights/CenterNet_voc_epoch_200.pth)           | https://arxiv.org/abs/1904.07850  |
 | SSD       |                   | https://arxiv.org/abs/1512.02325  |
+| YOLOX | | https://arxiv.org/abs/2107.08430  |
 # Quick start
 1. Make sure that you have installed PyTorch 1.10.0 and torchvision 0.11.1 or higher.
 2. Run the following to install dependencies.
@@ -51,5 +52,5 @@ pip install -r requirements.txt
 - https://github.com/calmisential/CenterNet_TensorFlow2
 - https://github.com/xingyizhou/CenterNet
 - https://github.com/amdegroot/ssd.pytorch
-- https://www.bilibili.com/video/BV1vK411H771?p=5
+- https://www.bilibili.com/video/BV1vK411H771
 - https://github.com/Megvii-BaseDetection/YOLOX

@@ -59,51 +59,6 @@ def reverse_letter_box(h, w, input_size, boxes, xywh=True):
     return new_boxes
 
 
-def direct_image_resize(image, size):
-    """
-
-    Args:
-        image: Numpy.ndarray
-        size: Tuple or List, (h, w)
-
-    Returns:
-
-    """
-    h, w = size
-    return cv2.resize(src=image, dsize=(w, h), interpolation=cv2.INTER_NEAREST)
-
-
-def reverse_direct_image_resize(h, w, input_size, boxes, xywh=True, coords_normalized=True):
-    """
-
-    Args:
-        h: 输入网络的图片的原始高度
-        w: 输入网络的图片的原始宽度
-        input_size: 网络的固定输入图片大小
-        boxes: Tensor, shape: (..., 4)
-        xywh: Bool, True：boxes是(cx, cy, w, h)格式, False: boxes是(xmin, ymin, xmax, ymax)格式
-        coords_normalized: Bool, boxes的坐标值是否已经归一化到[0, 1]
-
-    Returns:
-
-    """
-    # 转换为(xmin, ymin, xmax, ymax)格式
-    if xywh:
-        new_boxes = torch.cat((boxes[..., 0:2] - boxes[..., 2:4] / 2, boxes[..., 0:2] + boxes[..., 2:4] / 2), dim=-1)
-    else:
-        new_boxes = boxes.clone()
-    if coords_normalized:
-        new_boxes[..., ::2] *= w
-        new_boxes[..., 1::2] *= h
-        return new_boxes
-    else:
-        scale = [w / input_size, h / input_size]
-        new_boxes[..., ::2] *= scale[0]
-        new_boxes[..., 1::2] *= scale[1]
-        return new_boxes
-
-
-
 def iou_2(anchors, boxes):
     if not isinstance(anchors, torch.Tensor):
         anchors = torch.tensor(anchors)

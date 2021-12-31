@@ -12,6 +12,7 @@ from core.YOLOv3.dataloader import TrainLoader
 from core.YOLOv3.inference import Inference
 from core.YOLOv3.loss import YoloLoss, make_label
 from core.YOLOv3.model import YoloV3
+from dataset import find_class_name
 from draw import Draw
 from utils.tools import MeanMetric, letter_box
 from .template import ITrainer
@@ -25,6 +26,7 @@ class Yolo3Trainer(ITrainer):
         self.model = None
         self.cfg = cfg
         self.device = cfg["device"]
+        self.dataset_name = cfg["Train"]["dataset_name"]
         self.epochs = cfg["Train"]["epochs"]
         self.batch_size = cfg["Train"]["batch_size"]
         self.input_size = cfg["Train"]["input_size"]
@@ -171,14 +173,15 @@ class Yolo3Trainer(ITrainer):
         boxes = boxes.cpu().numpy()
         scores = scores.cpu().numpy()
         scores = np.squeeze(scores)
-        classes = classes.cpu().numpy()
+        classes = classes.cpu().numpy().tolist()
+        classes = [find_class_name(self.dataset_name, c, keep_index=True) for c in classes]
         if print_on:
             print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
             print("boxes: ", boxes)
             print("scores: ", scores)
             print("classes: ", classes)
 
-        painter = Draw(self.cfg)
+        painter = Draw()
         image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
 
         if save_result:

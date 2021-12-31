@@ -61,33 +61,3 @@ class Inference:
         scores = torch.cat(boxes_scores_list, dim=0)
         return apply_nms(self.cfg, boxes, scores, self.device)
 
-
-def test_pipeline(cfg, model, image_path, device, save_dir=None, print_on=True, save_result=True):
-    image = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    h, w, c = image.shape
-    image, _, _ = letter_box(image, (cfg["Train"]["input_size"], cfg["Train"]["input_size"]))
-    image = to_tensor(image)
-    image = torch.unsqueeze(image, dim=0)
-    image = image.to(device=device)
-    with torch.no_grad():
-        outputs = model(image)
-        boxes, scores, classes = Inference(cfg=cfg, outputs=outputs, input_image_shape=(h, w), device=device).get_results()
-    boxes = boxes.cpu().numpy()
-    scores = scores.cpu().numpy()
-    scores = np.squeeze(scores)
-    classes = classes.cpu().numpy()
-    if print_on:
-        print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
-        print("boxes: ", boxes)
-        print("scores: ", scores)
-        print("classes: ", classes)
-
-    painter = Draw(cfg)
-    image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
-
-    if save_result:
-        # 保存检测结果
-        cv2.imwrite(save_dir, image_with_boxes)
-    else:
-        return image_with_boxes

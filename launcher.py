@@ -61,9 +61,9 @@ if __name__ == '__main__':
 
     model_name = model.name
     config = model.cfg_file
-    test_pictures = [""]     # 测试图片的路径
+    test_pictures = [""]  # 测试图片的路径
     mode = "test"  # "train" or "test"
-    model_filename = "yolox_s.pth"   # 模型文件名，位于路径"saved_model"下
+    model_filename = "yolox_s.pth"  # 模型文件名，位于路径"saved_model"下
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("PyTorch version: {}, Device: {}".format(torch.__version__, device))
@@ -78,4 +78,3 @@ if __name__ == '__main__':
         trainer.test(images=test_pictures, prefix=get_time_format(), model_filename=model_filename, load_model=True)
     else:
         raise NotImplementedError("未实现的模式")
-

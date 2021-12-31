@@ -26,7 +26,7 @@ class BaseExp:
 
         # test
         self.nms_threshold = 0.65
-        self.confidence_threshold = 0.01
+        self.confidence_threshold = 0.5
 
     def _get_num_classes(self):
         if self.dataset_name == "coco":

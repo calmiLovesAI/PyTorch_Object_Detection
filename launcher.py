@@ -3,57 +3,12 @@ from datetime import datetime
 import torch
 
 from load_yaml import load_yamls
-from scripts import CenterNetTrainer, Yolo3Trainer, Yolo4Trainer, SSDTrainer, YoloXTrainer
+from register import CenterNetCFG, YOLOv3CFG, SSDCFG, YOLOxSCFG, YOLOxMCFG, YOLOxLCFG, YOLOxXCFG
 
 
 def get_time_format():
     now = datetime.now()
     return now.strftime("%Y-%m-%d_%H-%M-%S")
-
-
-class CenterNetCFG:
-    name = "centernet"
-    cfg_file = "centernet.yaml"
-
-    @staticmethod
-    def get_trainer(cfg):
-        return CenterNetTrainer(cfg)
-
-
-class YOLOv3CFG:
-    name = "yolov3"
-    cfg_file = "yolov3.yaml"
-
-    @staticmethod
-    def get_trainer(cfg):
-        return Yolo3Trainer(cfg)
-
-
-class YOLOv4CFG:
-    name = "yolov4"
-    cfg_file = "yolov4.yaml"
-
-    @staticmethod
-    def get_trainer(cfg):
-        return Yolo4Trainer(cfg)
-
-
-class SSDCFG:
-    name = "ssd"
-    cfg_file = "ssd.yaml"
-
-    @staticmethod
-    def get_trainer(cfg):
-        return SSDTrainer(cfg)
-
-
-class YOLOxSCFG:
-    name = "yolox_s"
-    cfg_file = "yolox_s.py"
-
-    @staticmethod
-    def get_trainer(cfg):
-        return YoloXTrainer(cfg)
 
 
 if __name__ == '__main__':

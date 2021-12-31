@@ -13,7 +13,7 @@ from draw import Draw
 from scripts.template import ITrainer
 from experiments.yolox_base import BaseExp
 from core.YOLOX.models import YOLOX, YOLOPAFPN, YOLOXHead
-from utils.tools import cv2_read_image, direct_image_resize
+from utils.tools import cv2_read_image
 
 
 class YoloXTrainer(ITrainer):

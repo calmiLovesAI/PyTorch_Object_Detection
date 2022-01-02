@@ -99,8 +99,62 @@ class YoloXTrainer(ITrainer):
         for image in images:
             t0 = time.time()
             save_dir = "./detect/{}_".format(prefix) + os.path.basename(image).split(".")[0] + ".jpg"
-            self._test_pipeline(image, save_dir=save_dir)
+            # self._test_pipeline(image, save_dir=save_dir)
+            self.forward_pipeline(self.cfg, self.model, image, save_dir=save_dir)
             print("检测图片{}用时：{:.4f}s".format(image, time.time() - t0))
+
+    @staticmethod
+    def forward_pipeline(cfg, model, image_path, save_dir=None, print_on=True, save_result=True):
+        """
+
+        Args:
+            cfg: 配置文件
+            model: 模型，eval模式
+            image_path: 待检测的图片路径
+            save_dir: 检测后图片的保存路径
+            print_on: 是否显示检测结果
+            save_result: 是否保存标注了检测框的图片
+
+        Returns:
+
+        """
+        # 参数
+        input_size = cfg.input_size
+        device = cfg.device
+        num_classes = cfg.num_classes
+        nms_threshold = cfg.nms_threshold
+        conf_threshold = cfg.confidence_threshold
+        dataset_name = cfg.dataset_name
+
+        image, h, w, c = cv2_read_image(image_path, False, True)
+        image = resize_with_pad(image, (input_size, input_size))
+        image = torch.from_numpy(image).unsqueeze(0).to(torch.float32).to(device=device)
+
+        with torch.no_grad():
+            outputs = model(image)
+            detections = postprocess(outputs, num_classes, conf_threshold, nms_threshold, class_agnostic=True)
+            boxes, scores, classes = get_specific_detection_results(detections[0], h, w, (input_size, input_size))
+        if boxes is not None:
+            boxes = boxes.cpu().numpy()
+            scores = scores.cpu().numpy()
+            classes = classes.cpu().numpy().tolist()
+            classes = [find_class_name(dataset_name, c, keep_index=True) for c in classes]
+            if print_on:
+                print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
+                print("boxes: ", boxes)
+                print("scores: ", scores)
+                print("classes: ", classes)
+
+            painter = Draw()
+            image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
+        else:
+            image_with_boxes = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
+
+        if save_result:
+            # 保存检测结果
+            cv2.imwrite(save_dir, image_with_boxes)
+        else:
+            return image_with_boxes
 
     def _test_pipeline(self, image_path, save_dir=None, print_on=True, save_result=True, *args, **kwargs):
         image, h, w, c = cv2_read_image(image_path, False, True)
@@ -109,8 +163,10 @@ class YoloXTrainer(ITrainer):
 
         with torch.no_grad():
             outputs = self.model(image)
-            detections = postprocess(outputs, self.num_classes, self.conf_threshold, self.nms_threshold, class_agnostic=True)
-            boxes, scores, classes = get_specific_detection_results(detections[0], h, w, (self.input_size, self.input_size))
+            detections = postprocess(outputs, self.num_classes, self.conf_threshold, self.nms_threshold,
+                                     class_agnostic=True)
+            boxes, scores, classes = get_specific_detection_results(detections[0], h, w,
+                                                                    (self.input_size, self.input_size))
         if boxes is not None:
             boxes = boxes.cpu().numpy()
             scores = scores.cpu().numpy()
@@ -132,4 +188,3 @@ class YoloXTrainer(ITrainer):
             cv2.imwrite(save_dir, image_with_boxes)
         else:
             return image_with_boxes
-

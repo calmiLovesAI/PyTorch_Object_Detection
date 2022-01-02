@@ -170,19 +170,24 @@ class Yolo3Trainer(ITrainer):
             outputs = self.model(image)
             boxes, scores, classes = Inference(cfg=self.cfg, outputs=outputs, input_image_shape=(h, w),
                                                device=self.device).get_results()
-        boxes = boxes.cpu().numpy()
-        scores = scores.cpu().numpy()
-        scores = np.squeeze(scores, axis=0)
-        classes = classes.cpu().numpy().tolist()
-        classes = [find_class_name(self.dataset_name, c, keep_index=True) for c in classes]
-        if print_on:
-            print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
-            print("boxes: ", boxes)
-            print("scores: ", scores)
-            print("classes: ", classes)
+        if boxes.size()[0] > 0:
+            # 如果检测到目标
+            boxes = boxes.cpu().numpy()
+            scores = scores.cpu().numpy()
+            scores = np.squeeze(scores, axis=0)
+            classes = classes.cpu().numpy().tolist()
+            classes = [find_class_name(self.dataset_name, c, keep_index=True) for c in classes]
+            if print_on:
+                print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
+                print("boxes: ", boxes)
+                print("scores: ", scores)
+                print("classes: ", classes)
 
-        painter = Draw()
-        image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
+            painter = Draw()
+            image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
+        else:
+            # 没有检测到任何目标
+            image_with_boxes = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
 
         if save_result:
             # 保存检测结果

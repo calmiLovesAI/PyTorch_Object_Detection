@@ -172,7 +172,7 @@ class Yolo3Trainer(ITrainer):
                                                device=self.device).get_results()
         boxes = boxes.cpu().numpy()
         scores = scores.cpu().numpy()
-        scores = np.squeeze(scores)
+        scores = np.squeeze(scores, axis=0)
         classes = classes.cpu().numpy().tolist()
         classes = [find_class_name(self.dataset_name, c, keep_index=True) for c in classes]
         if print_on:

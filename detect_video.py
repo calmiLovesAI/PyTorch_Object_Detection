@@ -4,10 +4,10 @@ import torch
 
 
 from scripts import YoloXTrainer
-from register import CenterNetCFG, YOLOv3CFG, SSDCFG, YOLOxSCFG, YOLOxMCFG, YOLOxLCFG, YOLOxXCFG
+from register import YOLOxSCFG
 
 from load_yaml import load_yamls
-from video import Video
+from utils.video import Video
 
 
 VIDEO_DIR = ""

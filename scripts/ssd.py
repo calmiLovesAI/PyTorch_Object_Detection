@@ -11,7 +11,7 @@ from core.SSD.dataloader import TrainLoader
 from core.SSD.inference import Decode
 from core.SSD.loss import MultiBoxLoss
 from core.SSD.model import SSD
-from draw import Draw
+from utils.draw import Draw
 from utils.tools import MeanMetric, letter_box, cv2_read_image
 from dataset import find_class_name
 from .template import ITrainer

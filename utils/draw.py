@@ -1,8 +1,6 @@
 import math
 import cv2
 
-from dataset import find_class_name
-
 
 class Draw:
     def __init__(self):
@@ -49,11 +47,6 @@ class Draw:
 
         num_boxes = boxes.shape[0]
         for i in range(num_boxes):
-            # if self.cfg is not None:
-            #     class_and_score = str(find_class_name(self.cfg, classes[i])) + ": {:.2f}".format(scores[i])
-            #     # 获取类别对应的颜色
-            #     bbox_color = self._get_rgb_color(classes[i])
-            # else:
             class_and_score = classes[i][0] + ": {:.2f}".format(scores[i])
             # 获取类别对应的颜色
             bbox_color = self._get_rgb_color(classes[i][1])

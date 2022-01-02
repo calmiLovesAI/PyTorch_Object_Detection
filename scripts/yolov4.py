@@ -3,17 +3,15 @@ import time
 from pathlib import Path
 
 import cv2
-import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.transforms.functional import to_tensor
 
 from core.YOLOv4.dataloader import TrainLoader
-from core.YOLOv3.inference import Inference
 from core.YOLOv4.inference import Decode
 from core.YOLOv4.loss import YoloLoss, make_label
 from core.YOLOv4.model import YOLOv4
-from draw import Draw
+from utils.draw import Draw
 from utils.tools import MeanMetric, letter_box
 from .template import ITrainer
 

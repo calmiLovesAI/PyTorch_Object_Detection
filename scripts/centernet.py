@@ -1,4 +1,3 @@
-import numpy as np
 import os
 import time
 from pathlib import Path
@@ -13,7 +12,7 @@ from core.CenterNet.inference import Decode
 from core.CenterNet.loss import CombinedLoss
 from core.CenterNet.model import CenterNet
 from core.CenterNet.target_generator import TargetGenerator
-from draw import Draw
+from utils.draw import Draw
 from utils.tools import MeanMetric, letter_box, cv2_read_image
 from dataset import find_class_name
 from .template import ITrainer

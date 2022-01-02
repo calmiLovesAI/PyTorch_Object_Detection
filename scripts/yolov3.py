@@ -13,7 +13,7 @@ from core.YOLOv3.inference import Inference
 from core.YOLOv3.loss import YoloLoss, make_label
 from core.YOLOv3.model import YoloV3
 from dataset import find_class_name
-from draw import Draw
+from utils.draw import Draw
 from utils.tools import MeanMetric, letter_box
 from .template import ITrainer
 

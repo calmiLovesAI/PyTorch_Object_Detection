@@ -3,7 +3,7 @@ import cv2
 from torchvision.transforms.functional import to_tensor
 
 from core.YOLOv4.anchor import get_anchor
-from draw import Draw
+from utils.draw import Draw
 from utils.nms import diou_nms
 from utils.tools import reverse_letter_box, letter_box
 

@@ -1,12 +1,8 @@
-import numpy as np
 import torch
-import cv2
 
 from core.YOLOv3.anchor import get_anchor
 from core.YOLOv3.nms import apply_nms
-from draw import Draw
-from utils.tools import letter_box, reverse_letter_box
-from torchvision.transforms.functional import to_tensor
+from utils.tools import reverse_letter_box
 
 
 def predict_bounding_bbox(cfg, feature_map, anchors, device, is_training=False):

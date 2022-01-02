@@ -9,7 +9,7 @@ from torch import nn
 from core.YOLOX.inference import postprocess, get_specific_detection_results
 from core.YOLOX.preprocess import resize_with_pad
 from dataset import find_class_name
-from draw import Draw
+from utils.draw import Draw
 from scripts.template import ITrainer
 from experiments.yolox_base import BaseExp
 from core.YOLOX.models import YOLOX, YOLOPAFPN, YOLOXHead

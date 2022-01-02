@@ -19,7 +19,7 @@ class ITrainer(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def _load(self, *args, **kwargs):
+    def load(self, *args, **kwargs):
         pass
 
     @abstractmethod

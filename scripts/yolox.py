@@ -72,7 +72,7 @@ class YoloXTrainer(ITrainer):
     def _set_lr_scheduler(self):
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode="min", patience=2)
 
-    def _load(self, weights_path):
+    def load(self, weights_path):
         assert self.model is None
         in_channels = [256, 512, 1024]
         backbone = YOLOPAFPN(self.depth, self.width, in_channels=in_channels, act=self.act)
@@ -94,12 +94,11 @@ class YoloXTrainer(ITrainer):
 
     def test(self, images, prefix, model_filename, load_model=False, *args, **kwargs):
         if load_model:
-            self._load(weights_path=Path(self.save_path).joinpath(model_filename))
+            self.load(weights_path=Path(self.save_path).joinpath(model_filename))
         self.model.eval()
         for image in images:
             t0 = time.time()
             save_dir = "./detect/{}_".format(prefix) + os.path.basename(image).split(".")[0] + ".jpg"
-            # self._test_pipeline(image, save_dir=save_dir)
             self.forward_pipeline(self.cfg, self.model, image, save_dir=save_dir)
             print("检测图片{}用时：{:.4f}s".format(image, time.time() - t0))
 

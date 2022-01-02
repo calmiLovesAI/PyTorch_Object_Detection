@@ -17,6 +17,7 @@ class Video:
         """
         self.cfg = cfg
         self.model = model
+        self.model.eval()
         self.device = device
         self.video_dir = video_dir
         self.write_video_dir = write_video_dir

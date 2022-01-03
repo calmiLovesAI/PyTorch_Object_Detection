@@ -14,9 +14,6 @@ Train:
   tensorboard_on: True
   test_pictures:
     - ""
-  video_dir: ""
-  video_save_dir: ""
-  save_video: True
 Model:
   num_classes: 20
   yolo_strides: [8, 16, 32]

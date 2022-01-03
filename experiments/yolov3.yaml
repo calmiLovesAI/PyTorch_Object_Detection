@@ -11,9 +11,6 @@ Train:
   tensorboard_on: True
   test_pictures:
     - ""
-  video_dir: ""
-  video_save_dir: ""
-  save_video: True
   # "voc" or "coco"
   dataset_name: "voc"
   max_num_boxes: 20

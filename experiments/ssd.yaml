@@ -15,9 +15,6 @@ Train:
   tensorboard_on: True
   test_pictures:
     - ""
-  video_dir: ""
-  video_save_dir: ""
-  save_video: True
 Loss:
   alpha: 0.25
   gamma: 2.0

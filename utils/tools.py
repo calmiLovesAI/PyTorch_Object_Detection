@@ -77,7 +77,7 @@ def iou_2(anchors, boxes):
     anchor_area = anchors[..., 0] * anchors[..., 1]
     box_area = boxes[..., 0] * boxes[..., 1]
     union_area = anchor_area + box_area - intersect_area
-    iou = intersect_area / union_area  # shape : [N, 9]
+    iou = intersect_area / (union_area + 1e-12)  # shape : [N, 9]
     return iou
 
 
@@ -108,7 +108,7 @@ class Iou4:
         intersect_wh = torch.clamp(intersect_wh, min=0)
         intersect_area = intersect_wh[..., 0] * intersect_wh[..., 1]
         union_area = self.box_1_area + self.box_2_area - intersect_area
-        iou = intersect_area / union_area
+        iou = intersect_area / (union_area + 1e-12)
         return iou
 
 

@@ -56,7 +56,7 @@ class Yolo3Trainer(ITrainer):
     def _set_lr_scheduler(self):
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode="min", patience=2)
 
-    def _load(self, weights_path):
+    def load(self, weights_path):
         if self.model is None:
             self._set_model()
         self.model.load_state_dict(torch.load(weights_path, map_location=self.device))
@@ -82,7 +82,7 @@ class Yolo3Trainer(ITrainer):
         start_epoch = -1
         if self.load_weights:
             # 加载权重参数
-            self._load(weights_path=Path(self.save_path).joinpath(
+            self.load(weights_path=Path(self.save_path).joinpath(
                 "YOLOv3_epoch_{}.pth".format(self.resume_training_from_epoch)))
             start_epoch = self.resume_training_from_epoch
 
@@ -149,34 +149,39 @@ class Yolo3Trainer(ITrainer):
 
     def test(self, images, prefix, model_filename, load_model=False, *args, **kwargs):
         if load_model:
-            self._load(weights_path=Path(self.save_path).joinpath(model_filename))
+            self.load(weights_path=Path(self.save_path).joinpath(model_filename))
         self.model.eval()
         for image in images:
             start_time = time.time()
             save_dir = "./detect/{}_".format(prefix) + os.path.basename(image).split(".")[0] + ".jpg"
-            self._test_pipeline(image, save_dir=save_dir)
+            self.forward_pipeline(cfg=self.cfg, model=self.model, image_path=image, save_dir=save_dir)
             print("检测图片{}用时：{:.4f}s".format(image, time.time() - start_time))
 
-    def _test_pipeline(self, image_path, save_dir=None, print_on=True, save_result=True, *args, **kwargs):
+    @staticmethod
+    def forward_pipeline(cfg, model, image_path, save_dir=None, print_on=True, save_result=True):
+        input_size = cfg["Train"]["input_size"]
+        device = cfg["device"]
+        dataset_name = cfg["Train"]["dataset_name"]
+
         image = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         h, w, c = image.shape
-        image, _, _ = letter_box(image, (self.input_size, self.input_size))
+        image, _, _ = letter_box(image, (input_size, input_size))
         image = to_tensor(image)
         image = torch.unsqueeze(image, dim=0)
-        image = image.to(device=self.device)
+        image = image.to(device=device)
 
         with torch.no_grad():
-            outputs = self.model(image)
-            boxes, scores, classes = Inference(cfg=self.cfg, outputs=outputs, input_image_shape=(h, w),
-                                               device=self.device).get_results()
+            outputs = model(image)
+            boxes, scores, classes = Inference(cfg=cfg, outputs=outputs, input_image_shape=(h, w),
+                                               device=device).get_results()
         if boxes.size()[0] > 0:
             # 如果检测到目标
             boxes = boxes.cpu().numpy()
             scores = scores.cpu().numpy()
             scores = np.squeeze(scores, axis=-1)
             classes = classes.cpu().numpy().tolist()
-            class_names = [find_class_name(self.dataset_name, c, keep_index=True) for c in classes]
+            class_names = [find_class_name(dataset_name, c, keep_index=True) for c in classes]
             if print_on:
                 print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
                 print("boxes: ", boxes)

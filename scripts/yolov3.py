@@ -174,17 +174,17 @@ class Yolo3Trainer(ITrainer):
             # 如果检测到目标
             boxes = boxes.cpu().numpy()
             scores = scores.cpu().numpy()
-            scores = np.squeeze(scores, axis=0)
-            classes = classes.cpu().numpy().tolist()
-            classes = [find_class_name(self.dataset_name, c, keep_index=True) for c in classes]
+            scores = np.squeeze(scores, axis=-1)
+            classes= classes.cpu().numpy().tolist()
+            class_names = [find_class_name(self.dataset_name, c, keep_index=True) for c in classes]
             if print_on:
                 print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
                 print("boxes: ", boxes)
                 print("scores: ", scores)
-                print("classes: ", classes)
+                print("classes: ", class_names)
 
             painter = Draw()
-            image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
+            image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes, class_names)
         else:
             # 没有检测到任何目标
             image_with_boxes = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)

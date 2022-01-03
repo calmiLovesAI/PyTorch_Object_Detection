@@ -32,7 +32,7 @@ class Decode:
         # loc_data: (batch_size, num_priors, 4)
         # conf_data: (batch_size, num_priors, self.num_classes)
         conf_data = F.softmax(conf_data, dim=-1)
-        print("conf_data里面的数据范围：", torch.min(conf_data), torch.max(conf_data))
+        # print("conf_data里面的数据范围：", torch.min(conf_data), torch.max(conf_data))
         batch_size = loc_data.size()[0]
         assert batch_size == 1, "仅支持单张图片作为预测输入。"
         loc_data = torch.squeeze(loc_data, dim=0)   # (num_priors, 4)
@@ -61,8 +61,8 @@ class Decode:
 
         # 移除低概率目标
         inds = torch.nonzero(scores_all > self.conf_thresh).squeeze(1)
-        print("总共有{}个".format(scores_all.size()))
-        print("保留的bbox有{}个".format(inds.size()))
+        # print("总共有{}个".format(scores_all.size()))
+        # print("保留的bbox有{}个".format(inds.size()))
         boxes_all, scores_all, labels_all = boxes_all[inds], scores_all[inds], labels_all[inds]
 
         # # 移除面积很小的边界框

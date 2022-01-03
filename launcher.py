@@ -13,13 +13,12 @@ def get_time_format():
 
 if __name__ == '__main__':
     model = SSDCFG
-
-    model_name = model.name
-    config = model.cfg_file
     test_pictures = [""]  # 测试图片的路径
     mode = "test"  # "train" or "test"
     model_filename = ""  # 模型文件名，位于路径"saved_model"下
 
+    model_name = model.name
+    config = model.cfg_file
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("PyTorch version: {}, Device: {}".format(torch.__version__, device))
     cfg = load_yamls(model_yaml=config, device=device, model_name=model_name)

@@ -12,10 +12,11 @@ from utils.video import Video
 VIDEO_DIR = ""
 SAVE_VIDEO = True   # True: 先一帧一帧地检测，然后将结果保存为一个视频序列；False: 实时显示检测结果，但不保存
 VIDEO_SAVE_DIR = ""
+MODEL_FILE_NAME = ""
+model = YOLOxSCFG
 
 if __name__ == '__main__':
-    model = YOLOxSCFG
-    model_full_path = Path("./saved_model").joinpath("")
+    model_full_path = Path("./saved_model").joinpath(MODEL_FILE_NAME)
 
     model_name = model.name
     config = model.cfg_file

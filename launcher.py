@@ -14,7 +14,7 @@ def get_time_format():
 if __name__ == '__main__':
     model = SSDCFG
     test_pictures = [""]  # 测试图片的路径
-    mode = "test"  # "train" or "test"
+    mode = "train"  # "train" or "test"
     model_filename = ""  # 模型文件名，位于路径"saved_model"下
 
     model_name = model.name

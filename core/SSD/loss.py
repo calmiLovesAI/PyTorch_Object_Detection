@@ -34,8 +34,11 @@ class MultiBoxLoss:
         loc_t = torch.Tensor(batch_size, num_priors, 4)
         conf_t = torch.LongTensor(batch_size, num_priors)
         for idx in range(batch_size):
-            truths = y_true[idx][:, :-1].data
-            labels = y_true[idx][:, -1].data
+            # 去除y_true中padding的检测框
+            true_boxes = y_true[idx]
+            true_boxes = true_boxes[true_boxes[:, -1] != -1]
+            truths = true_boxes[:, :-1].data
+            labels = true_boxes[:, -1].data
             defaults = priors.data
             match(self.threshold, truths, defaults, self.variance, labels,
                   loc_t, conf_t, idx)
@@ -46,37 +49,43 @@ class MultiBoxLoss:
         conf_t.requires_grad = False
 
         pos = conf_t > 0
-        num_pos = pos.sum(dim=1, keepdim=True)
+        pos_num = pos.sum(dim=1, keepdim=True)  # 每张图片匹配到的正样本个数
 
         # 位置loss: Smooth L1 loss
         pos_idx = pos.unsqueeze(pos.dim()).expand_as(loc_data)
         loc_p = loc_data[pos_idx].view(-1, 4)
         loc_t = loc_t[pos_idx].view(-1, 4)
-        loss_l = F.smooth_l1_loss(loc_p, loc_t, reduction="sum")
+        loss_l = F.smooth_l1_loss(loc_p, loc_t, reduction="sum")   # shape: [N]
 
         batch_conf = conf_data.view(-1, self.num_classes)
         loss_c = log_sum_exp(batch_conf) - batch_conf.gather(1, conf_t.view(-1, 1))
 
         # Hard Negative Mining
-        loss_c = loss_c.view(pos.size())
+        loss_c = loss_c.clone().view(pos.size())
         loss_c[pos] = 0
+        # 排序，得到一个索引，它的值表示这个位置的元素第几大
         _, loss_idx = loss_c.sort(1, descending=True)
         _, idx_rank = loss_idx.sort(1)
         num_pos = pos.long().sum(1, keepdim=True)
         num_neg = torch.clamp(self.negpos_ratio * num_pos, max=pos.size(1) - 1)
         neg = idx_rank < num_neg.expand_as(idx_rank)
 
-        # 置信度loss
+        # 分类loss
         pos_idx = pos.unsqueeze(2).expand_as(conf_data)
         neg_idx = neg.unsqueeze(2).expand_as(conf_data)
         conf_p = conf_data[(pos_idx + neg_idx).gt(0)].view(-1, self.num_classes)
         targets_weighted = conf_t[(pos + neg).gt(0)]
         loss_c = F.cross_entropy(conf_p, targets_weighted, reduction="sum")
 
-        N = num_pos.data.sum()
-        loss_l /= N
-        loss_c /= N
-        return loss_l, loss_c
+        # N = num_pos.data.sum()
+        # loss_l /= N
+        # loss_c /= N
+        # return loss_l, loss_c
+        total_loss = loss_l + loss_c
+        num_mask = (pos_num > 0).float()
+        pos_num = pos_num.float().clamp(min=1e-6)
+        total_loss = (total_loss * num_mask / pos_num).mean(dim=0)
+        return total_loss
 
 
 """

@@ -175,7 +175,7 @@ class Yolo3Trainer(ITrainer):
             boxes = boxes.cpu().numpy()
             scores = scores.cpu().numpy()
             scores = np.squeeze(scores, axis=-1)
-            classes= classes.cpu().numpy().tolist()
+            classes = classes.cpu().numpy().tolist()
             class_names = [find_class_name(self.dataset_name, c, keep_index=True) for c in classes]
             if print_on:
                 print("检测出{}个边界框，分别是：".format(boxes.shape[0]))

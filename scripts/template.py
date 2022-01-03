@@ -35,18 +35,5 @@ class ITrainer(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def _test_pipeline(self, *args, **kwargs):
-        """
-        已废弃
-        Args:
-            *args:
-            **kwargs:
-
-        Returns:
-
-        """
-        pass
-
-    @abstractmethod
     def forward_pipeline(self, *args, **kwargs):
         pass

@@ -12,7 +12,7 @@ def get_time_format():
 
 
 if __name__ == '__main__':
-    model = YOLOxSCFG
+    model = SSDCFG
 
     model_name = model.name
     config = model.cfg_file

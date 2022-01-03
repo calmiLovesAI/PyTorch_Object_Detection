@@ -56,7 +56,7 @@ class SSDTrainer(ITrainer):
     def _set_lr_scheduler(self):
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode="min", patience=2)
 
-    def _load(self, weights_path):
+    def load(self, weights_path):
         if self.model is None:
             self._set_model()
         self.model.load_state_dict(torch.load(weights_path, map_location=self.device))
@@ -81,7 +81,7 @@ class SSDTrainer(ITrainer):
 
         if self.load_weights:
             # 加载权重参数
-            self._load(weights_path=Path(self.save_path).joinpath(self.pretrained_weights))
+            self.load(weights_path=Path(self.save_path).joinpath(self.pretrained_weights))
         if self.tensorboard_on:
             writer = SummaryWriter()  # 在控制台使用命令 tensorboard --logdir=runs 进入tensorboard面板
             writer.add_graph(self.model, torch.randn(self.batch_size, 3, self.input_size, self.input_size,
@@ -114,7 +114,7 @@ class SSDTrainer(ITrainer):
                         loss_mean.result(),
                         loc_loss_mean.result(),
                         conf_loss_mean.result()
-                        ))
+                    ))
                 if self.tensorboard_on:
                     writer.add_scalar(tag="Total Loss", scalar_value=loss_mean.result(),
                                       global_step=epoch * len(self.train_dataloader) + i)
@@ -137,40 +137,50 @@ class SSDTrainer(ITrainer):
 
     def test(self, images, prefix, model_filename, load_model=False, *args, **kwargs):
         if load_model:
-            self._load(weights_path=Path(self.save_path).joinpath(model_filename))
+            self.load(weights_path=Path(self.save_path).joinpath(model_filename))
         self.model.eval()
         for image in images:
             start_time = time.time()
             save_dir = "./detect/{}_".format(prefix) + os.path.basename(image).split(".")[0] + ".jpg"
-            self._test_pipeline(image, save_dir=save_dir)
+            self.forward_pipeline(self.cfg, self.model, image, save_dir)
             print("检测图片{}用时：{:.4f}s".format(image, time.time() - start_time))
 
-    def _test_pipeline(self, image_path, save_dir=None, print_on=True, save_result=True, *args, **kwargs):
-        image, h, w, c = cv2_read_image(image_path)
-        image, _, _ = letter_box(image, (self.input_size, self.input_size))
+    @staticmethod
+    def forward_pipeline(cfg, model, image_path, save_dir=None, print_on=True, save_result=True):
+        input_size = cfg["Train"]["input_size"]
+        device = cfg["device"]
+        dataset_name = cfg["Train"]["dataset_name"]
+
+        image, h, w, c = cv2_read_image(image_path, False, True)
+        image, _, _ = letter_box(image, (input_size, input_size))
         image = to_tensor(image)
         image = torch.unsqueeze(image, dim=0)
-        image = image.to(device=self.device)
+        image = image.to(device)
 
         with torch.no_grad():
-            outputs = self.model(image)
-            decoder = Decode(self.cfg, [h, w], self.input_size)
+            outputs = model(image)
+            decoder = Decode(cfg, [h, w], input_size)
             boxes, scores, classes = decoder(outputs)
-        boxes = boxes.cpu().numpy()
-        scores = scores.cpu().numpy()
-        classes = classes.cpu().numpy().tolist()
-        classes = [find_class_name(self.cfg, c, keep_index=True) for c in classes]
-        if print_on:
-            print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
-            print("boxes: ", boxes)
-            print("scores: ", scores)
-            print("classes: ", classes)
+        if boxes.size()[0] != 0:
+            boxes = boxes.cpu().numpy()
+            scores = scores.cpu().numpy()
+            classes = classes.cpu().numpy().tolist()
+            class_names = [find_class_name(dataset_name, c, keep_index=True) for c in classes]
+            if print_on:
+                print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
+                print("boxes: ", boxes)
+                print("scores: ", scores)
+                print("classes: ", class_names)
 
-        painter = Draw()
-        image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, classes)
+            painter = Draw()
+            image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, class_ids=classes,
+                                                           class_names=class_names)
+        else:
+            image_with_boxes = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
 
         if save_result:
             # 保存检测结果
             cv2.imwrite(save_dir, image_with_boxes)
         else:
             return image_with_boxes
+

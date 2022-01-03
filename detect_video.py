@@ -3,7 +3,6 @@ from pathlib import Path
 import torch
 
 
-from scripts import YoloXTrainer
 from register import YOLOxSCFG
 
 from load_yaml import load_yamls
@@ -24,7 +23,7 @@ if __name__ == '__main__':
     print("PyTorch version: {}, Device: {}".format(torch.__version__, device))
     cfg = load_yamls(model_yaml=config, device=device, model_name=model_name)
 
-    model_trainer = YoloXTrainer(cfg)
+    model_trainer = model.get_trainer(cfg)
 
     model_trainer.load(weights_path=model_full_path)
 

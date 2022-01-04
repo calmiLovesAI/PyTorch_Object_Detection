@@ -75,8 +75,6 @@ class SSDTrainer(ITrainer):
         # 损失函数
         criterion = MultiBoxLoss(cfg=self.cfg)
         # metrics
-        # loc_loss_mean = MeanMetric()
-        # conf_loss_mean = MeanMetric()
         loss_mean = MeanMetric()
 
         if self.load_weights:
@@ -97,9 +95,6 @@ class SSDTrainer(ITrainer):
                 self.optimizer.zero_grad()
                 preds = self.model(images)
                 total_loss = criterion(y_true=labels, y_pred=preds)
-                # total_loss = loc_loss + conf_loss
-                # loc_loss_mean.update(loc_loss.item())
-                # conf_loss_mean.update(conf_loss.item())
                 loss_mean.update(total_loss.item())
                 total_loss.backward()
                 self.optimizer.step()
@@ -112,16 +107,10 @@ class SSDTrainer(ITrainer):
                         len(self.train_dataloader),
                         time.time() - start_time,
                         loss_mean.result(),
-                        # loc_loss_mean.result(),
-                        # conf_loss_mean.result()
                     ))
                 if self.tensorboard_on:
                     writer.add_scalar(tag="Total Loss", scalar_value=loss_mean.result(),
                                       global_step=epoch * len(self.train_dataloader) + i)
-                    # writer.add_scalar(tag="Loc Loss", scalar_value=loc_loss_mean.result(),
-                    #                   global_step=epoch * len(self.train_dataloader) + i)
-                    # writer.add_scalar(tag="Conf Loss", scalar_value=conf_loss_mean.result(),
-                    #                   global_step=epoch * len(self.train_dataloader) + i)
             self.scheduler.step(loss_mean.result())
             loss_mean.reset()
 

@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 
 
 class PublicTrainLoader:
-    def __init__(self, cfg):
+    def __init__(self, cfg, resize=True, target_padding=True, to_tensor=True):
         self.dataset_name = cfg["Train"]["dataset_name"]
         self.batch_size = cfg["Train"]["batch_size"]
         self.voc_cfg = cfg["VOC"]
@@ -14,9 +14,16 @@ class PublicTrainLoader:
         self.custom_cfg = cfg["Custom"]
         self.input_size = cfg["Train"]["input_size"]
         self.max_num_boxes = cfg["Train"]["max_num_boxes"]
-        self.transforms = [T.Resize(size=self.input_size),
-                           T.TargetPadding(max_num_boxes=self.max_num_boxes),
-                           T.ToTensor()]
+        # self.transforms = [T.Resize(size=self.input_size),
+        #                    T.TargetPadding(max_num_boxes=self.max_num_boxes),
+        #                    T.ToTensor()]
+        self.transforms = []
+        if resize:
+            self.transforms.append(T.Resize(size=self.input_size))
+        if target_padding:
+            self.transforms.append(T.TargetPadding(max_num_boxes=self.max_num_boxes))
+        if to_tensor:
+            self.transforms.append(T.ToTensor())
 
     def _voc(self):
         return Voc(self.voc_cfg, T.Compose(transforms=self.transforms))

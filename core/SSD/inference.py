@@ -17,7 +17,7 @@ class Decode:
             input_image_size: int, 输入SSD的图片的固定大小
         """
         self.device = cfg["device"]
-        self.priors = torch.from_numpy(DefaultBoxes(cfg).__call__()).to(self.device)
+        self.priors = DefaultBoxes(cfg).__call__()
         self.top_k = cfg["Decode"]["max_num_output_boxes"]
         self.num_classes = cfg["Model"]["num_classes"] + 1
         self.variance = cfg["Loss"]["variance"]
@@ -33,11 +33,11 @@ class Decode:
         # conf_data: (batch_size, num_priors, self.num_classes)
         conf_data = F.softmax(conf_data, dim=-1)
         # print("conf_data里面的数据范围：", torch.min(conf_data), torch.max(conf_data))
-        batch_size = loc_data.size()[0]
+        batch_size = loc_data.size(0)
         assert batch_size == 1, "仅支持单张图片作为预测输入。"
         loc_data = torch.squeeze(loc_data, dim=0)   # (num_priors, 4)
         scores = torch.squeeze(conf_data, dim=0)   # (num_priors, self.num_classes)
-        num_priors = self.priors.size()[0]
+        num_priors = self.priors.size(0)
 
         # decoded_boxes shape: [num_priors, 4(xmin, ymin, xmax, ymax)]
         decoded_boxes = decode(loc_data, self.priors, self.variance)

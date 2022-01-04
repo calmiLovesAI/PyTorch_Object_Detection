@@ -44,7 +44,7 @@ class DefaultBoxes:
                 for ar in self.aspect_ratios[k]:
                     boxes += [center_x, center_y, s_min * math.sqrt(ar), s_min / math.sqrt(ar)]
 
-        anchors = torch.tensor(boxes, dtype=torch.float32, device=self.device)
+        anchors = torch.tensor(boxes, dtype=torch.float32)
         anchors = torch.reshape(anchors, shape=(-1, 4)).clamp_(min=0, max=1)   # shape: (8732, 4(cx, cy, w, h))
         anchors_ltrb = anchors.clone()   # (xmin, ymin, xmax, ymax)格式
         anchors_ltrb[:, 0] = anchors[:, 0] - 0.5 * anchors[:, 2]

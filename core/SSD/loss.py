@@ -8,7 +8,7 @@ class MultiBoxLoss:
     def __init__(self, cfg):
         self.device = cfg["device"]
         # torch.Tensor, shape: (先验框总数(8732), 4)
-        self.default_boxes = DefaultBoxes(cfg).__call__(xyxy=False)
+        self.default_boxes = DefaultBoxes(cfg).__call__(xyxy=False).to(self.device)
         self.default_boxes.requires_grad = False
         self.default_boxes = self.default_boxes.unsqueeze(dim=0)  # shape: (1, 8732, 4)
         self.num_classes = cfg["Model"]["num_classes"] + 1

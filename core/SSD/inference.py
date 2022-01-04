@@ -17,7 +17,7 @@ class Decode:
             input_image_size: int, 输入SSD的图片的固定大小
         """
         self.device = cfg["device"]
-        self.priors = DefaultBoxes(cfg).__call__(xyxy=False)
+        self.priors = DefaultBoxes(cfg).__call__(xyxy=False).to(self.device)
         self.top_k = cfg["Decode"]["max_num_output_boxes"]
         self.num_classes = cfg["Model"]["num_classes"] + 1
         self.variance = cfg["Loss"]["variance"]

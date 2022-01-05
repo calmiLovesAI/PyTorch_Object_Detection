@@ -3,7 +3,6 @@ import torch.nn.functional as F
 from torchvision.ops import batched_nms
 
 from core.SSD.anchor import DefaultBoxes
-from core.SSD.loss import decode
 from utils.tools import reverse_letter_box
 
 

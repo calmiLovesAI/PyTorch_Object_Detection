@@ -48,9 +48,9 @@ class DefaultBoxes:
         anchors = torch.reshape(anchors, shape=(-1, 4)).clamp_(min=0, max=1)   # shape: (8732, 4(cx, cy, w, h))
         anchors_ltrb = anchors.clone()   # (xmin, ymin, xmax, ymax)格式
         anchors_ltrb[:, 0] = anchors[:, 0] - 0.5 * anchors[:, 2]
-        anchors_ltrb[:, 1] = anchors[:, 0] - 0.5 * anchors[:, 3]
+        anchors_ltrb[:, 1] = anchors[:, 1] - 0.5 * anchors[:, 3]
         anchors_ltrb[:, 2] = anchors[:, 0] + 0.5 * anchors[:, 2]
-        anchors_ltrb[:, 3] = anchors[:, 0] + 0.5 * anchors[:, 3]
+        anchors_ltrb[:, 3] = anchors[:, 1] + 0.5 * anchors[:, 3]
 
         if xyxy:
             return anchors_ltrb

@@ -6,6 +6,7 @@ Train:
   input_size: 300
   # "voc" or "coco"
   dataset_name: "voc"
+  max_num_boxes: 50
   save_path: "./saved_model/"
   save_frequency: 1
   test_during_training: True

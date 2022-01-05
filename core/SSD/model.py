@@ -71,8 +71,8 @@ class SSD(nn.Module):
         super(SSD, self).__init__()
         self.num_classes = cfg["Model"]["num_classes"] + 1
         # self.stage_boxes_per_pixel: 每个stage分支输出的feature map中每个像素位置处的先验框数量
-        aspect_ratio = cfg["Model"]["aspect_ratio"]
-        self.stage_boxes_per_pixel = [len(ar) + 2 for ar in aspect_ratio]
+        aspect_ratio = [[2], [2, 3], [2, 3], [2, 3], [2], [2]]
+        self.stage_boxes_per_pixel = [2*len(ar) + 2 for ar in aspect_ratio]
 
         self.backbone = VGG(use_bn=True)
         self.l2_norm = L2Normalize(n_channels=512, scale=20)

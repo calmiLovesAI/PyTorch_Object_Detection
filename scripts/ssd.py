@@ -76,6 +76,8 @@ class SSDTrainer(ITrainer):
         criterion = MultiBoxLoss(cfg=self.cfg)
         # metrics
         loss_mean = MeanMetric()
+        loc_mean = MeanMetric()
+        conf_mean = MeanMetric()
 
         if self.load_weights:
             # 加载权重参数
@@ -94,22 +96,30 @@ class SSDTrainer(ITrainer):
 
                 self.optimizer.zero_grad()
                 preds = self.model(images)
-                total_loss = criterion(y_true=labels, y_pred=preds)
+                total_loss, l_loss, c_loss = criterion(y_true=labels, y_pred=preds)
                 loss_mean.update(total_loss.item())
+                loc_mean.update(l_loss.item())
+                conf_mean.update(c_loss.item())
                 total_loss.backward()
                 self.optimizer.step()
 
                 print(
-                    "Epoch: {}/{}, step: {}/{}, speed: {:.3f}s/step, total_loss: {}".format(
+                    "Epoch: {}/{}, step: {}/{}, speed: {:.3f}s/step, total_loss: {}, loc_loss: {}, conf_loss: {}".format(
                         epoch,
                         self.epochs,
                         i,
                         len(self.train_dataloader),
                         time.time() - start_time,
                         loss_mean.result(),
+                        loc_mean.result(),
+                        conf_mean.result()
                     ))
                 if self.tensorboard_on:
                     writer.add_scalar(tag="Total Loss", scalar_value=loss_mean.result(),
+                                      global_step=epoch * len(self.train_dataloader) + i)
+                    writer.add_scalar(tag="Loc Loss", scalar_value=loc_mean.result(),
+                                      global_step=epoch * len(self.train_dataloader) + i)
+                    writer.add_scalar(tag="Conf Loss", scalar_value=conf_mean.result(),
                                       global_step=epoch * len(self.train_dataloader) + i)
             self.scheduler.step(loss_mean.result())
             loss_mean.reset()
@@ -172,4 +182,3 @@ class SSDTrainer(ITrainer):
             cv2.imwrite(save_dir, image_with_boxes)
         else:
             return image_with_boxes
-

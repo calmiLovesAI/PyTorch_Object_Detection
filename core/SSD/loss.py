@@ -66,7 +66,9 @@ class MultiBoxLoss:
         num_mask = (pos_num > 0).float()
         pos_num = pos_num.float().clamp(min=1e-6)
         total_loss = (total_loss * num_mask / pos_num).mean(dim=0)
-        return total_loss
+        loss_l = (loc_loss * num_mask / pos_num).mean(dim=0)
+        loss_c = (con_loss * num_mask / pos_num).mean(dim=0)
+        return total_loss, loss_l, loss_c
 
 
 """

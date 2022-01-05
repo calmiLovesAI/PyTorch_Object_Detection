@@ -154,7 +154,7 @@ class SSDTrainer(ITrainer):
             boxes = boxes.cpu().numpy()
             scores = scores.cpu().numpy()
             classes = classes.cpu().numpy().tolist()
-            class_names = [find_class_name(dataset_name, c, keep_index=True) for c in classes]
+            class_names = [find_class_name(dataset_name, c, keep_index=False) for c in classes]
             if print_on:
                 print("检测出{}个边界框，分别是：".format(boxes.shape[0]))
                 print("boxes: ", boxes)

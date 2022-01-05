@@ -17,53 +17,79 @@ class Decode:
             input_image_size: int, 输入SSD的图片的固定大小
         """
         self.device = cfg["device"]
-        self.priors = DefaultBoxes(cfg).__call__(xyxy=False).to(self.device)
+        self.priors_xywh = DefaultBoxes(cfg).__call__(xyxy=False).to(self.device)
+        self.priors_xywh = torch.unsqueeze(self.priors_xywh, dim=0)
         self.top_k = cfg["Decode"]["max_num_output_boxes"]
         self.num_classes = cfg["Model"]["num_classes"] + 1
+
         self.variance = cfg["Loss"]["variance"]
+        self.scale_xy = self.variance[0]
+        self.scale_wh = self.variance[1]
+
         self.conf_thresh = cfg["Decode"]["confidence_threshold"]
         self.nms_thresh = cfg["Decode"]["nms_threshold"]
 
         self.original_image_size = original_image_size
         self.input_image_size = input_image_size
 
+    def _decode(self, bboxes_in, scores_in):
+        """
+
+        Args:
+            bboxes_in: torch.Tensor, shape: (batch_size, num_priors, 4)
+            scores_in: torch.Tensor, shape: (batch_size, num_priors, self.num_classes)
+
+        Returns:
+
+        """
+        bboxes_in[:, :, :2] = self.scale_xy * bboxes_in[:, :, :2]
+        bboxes_in[:, :, 2:] = self.scale_wh * bboxes_in[:, :, 2:]
+        bboxes_in[:, :, :2] = bboxes_in[:, :, :2] * self.priors_xywh[:, :, 2:] + self.priors_xywh[:, :, :2]
+        bboxes_in[:, :, 2:] = torch.exp(bboxes_in[:, :, 2:]) * self.priors_xywh[:, :, 2:]
+
+        xmin = bboxes_in[:, :, 0] - 0.5 * bboxes_in[:, :, 2]
+        xmax = bboxes_in[:, :, 0] + 0.5 * bboxes_in[:, :, 2]
+        ymin = bboxes_in[:, :, 1] - 0.5 * bboxes_in[:, :, 3]
+        ymax = bboxes_in[:, :, 1] + 0.5 * bboxes_in[:, :, 3]
+        bboxes_in[:, :, 0] = xmin
+        bboxes_in[:, :, 1] = ymin
+        bboxes_in[:, :, 2] = xmax
+        bboxes_in[:, :, 3] = ymax
+        return bboxes_in, F.softmax(scores_in, dim=-1)
+
     def __call__(self, outputs):
         loc_data, conf_data = outputs
-        # loc_data: (batch_size, num_priors, 4)
-        # conf_data: (batch_size, num_priors, self.num_classes)
-        conf_data = F.softmax(conf_data, dim=-1)
-        # print("conf_data里面的数据范围：", torch.min(conf_data), torch.max(conf_data))
-        batch_size = loc_data.size(0)
-        assert batch_size == 1, "仅支持单张图片作为预测输入。"
-        loc_data = torch.squeeze(loc_data, dim=0)   # (num_priors, 4)
-        scores = torch.squeeze(conf_data, dim=0)   # (num_priors, self.num_classes)
-        num_priors = self.priors.size(0)
 
-        # decoded_boxes shape: [num_priors, 4(xmin, ymin, xmax, ymax)]
-        decoded_boxes = decode(loc_data, self.priors, self.variance)
+        bboxes, probs = self._decode(loc_data, conf_data)
+
+        batch_size = bboxes.size(0)
+        assert batch_size == 1, "仅支持单张图片作为预测输入。"
+        bbox = torch.squeeze(bboxes, dim=0)  # (num_priors, 4)
+        prob = torch.squeeze(probs, dim=0)  # (num_priors, self.num_classes)
+        num_priors = self.priors_xywh.size(0)
+
         # 限制在[0, 1]范围内
-        decoded_boxes = torch.clamp(decoded_boxes, min=0, max=1)
-        decoded_boxes = decoded_boxes.repeat(1, self.num_classes).reshape(scores.size()[0], -1, 4)
+        decoded_boxes = torch.clamp(bbox, min=0, max=1)
+        # (num_priors, 4) - > (num_priors, 21, 4)
+        decoded_boxes = decoded_boxes.repeat(1, self.num_classes).reshape(prob.size()[0], -1, 4)
 
         # 为每一个类别创建标签信息(0~20)
         labels = torch.arange(self.num_classes, dtype=torch.int32, device=self.device)
-        labels = labels.unsqueeze(0).expand_as(scores)  # shape: (num_priors, num_classes)
+        labels = labels.view(1, -1).expand_as(prob)  # shape: (num_priors, num_classes)
 
         # 移除背景类别的信息
-        boxes = decoded_boxes[:, 1:, :]
-        scores = scores[:, 1:]
-        labels = labels[:, 1:]
+        boxes = decoded_boxes[:, 1:, :]  # (num_priors, 20, 4)
+        scores = prob[:, 1:]  # (num_priors, 20)
+        labels = labels[:, 1:]   # (num_priors, 20)
 
         # 对于每一个box，它都有可能属于这(num_classes-1)个类别之一
-        boxes_all = boxes.reshape(-1, 4)
-        scores_all = scores.reshape(-1)
-        labels_all = labels.reshape(-1)
+        boxes_all = boxes.reshape(-1, 4)   # (num_priors*20, 4)
+        scores_all = scores.reshape(-1)  # (num_priors*20)
+        labels_all = labels.reshape(-1)   # (num_priors*20)
 
         # 移除低概率目标
         inds = torch.nonzero(scores_all > self.conf_thresh).squeeze(1)
-        # print("总共有{}个".format(scores_all.size()))
-        # print("保留的bbox有{}个".format(inds.size()))
-        boxes_all, scores_all, labels_all = boxes_all[inds], scores_all[inds], labels_all[inds]
+        boxes_all, scores_all, labels_all = boxes_all[inds, :], scores_all[inds], labels_all[inds]
 
         # # 移除面积很小的边界框
         # w, h = boxes_all[:, 2] - boxes_all[:, 0], boxes_all[:, 3] - boxes_all[:, 1]

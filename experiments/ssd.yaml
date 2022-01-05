@@ -6,7 +6,6 @@ Train:
   input_size: 300
   # "voc" or "coco"
   dataset_name: "voc"
-  max_num_boxes: 30
   save_path: "./saved_model/"
   save_frequency: 1
   test_during_training: True
@@ -31,31 +30,6 @@ Decode:
 Model:
   name: "SSD"
   num_classes: 20
-  aspect_ratio:
-    -
-      - 2.0
-      - 0.5
-    -
-      - 2.0
-      - 0.5
-      - 3.0
-      - 1.0 / 3.0
-    -
-      - 2.0
-      - 0.5
-      - 3.0
-      - 1.0 / 3.0
-    -
-      - 2.0
-      - 0.5
-      - 3.0
-      - 1.0 / 3.0
-    -
-      - 2.0
-      - 0.5
-    -
-      - 2.0
-      - 0.5
   downsampling_ratio:
     - 8
     - 16

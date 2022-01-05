@@ -3,8 +3,6 @@ import torch
 
 from itertools import product
 
-from core.SSD.aspect_ratio import get_aspect_ratio
-
 
 class DefaultBoxes:
     def __init__(self, cfg):
@@ -13,7 +11,7 @@ class DefaultBoxes:
 
         self.output_feature_sizes = cfg["Model"]["feature_size"]
         self.default_boxes_sizes = DefaultBoxes._get_default_boxes_sizes(cfg["Train"]["dataset_name"])
-        self.aspect_ratios = get_aspect_ratio(cfg)
+        self.aspect_ratios = [[2], [2, 3], [2, 3], [2, 3], [2], [2]]
         self.num_priors = len(self.aspect_ratios)
         self.steps = cfg["Model"]["downsampling_ratio"]
 
@@ -43,6 +41,7 @@ class DefaultBoxes:
                 boxes += [center_x, center_y, s_max, s_max]
                 for ar in self.aspect_ratios[k]:
                     boxes += [center_x, center_y, s_min * math.sqrt(ar), s_min / math.sqrt(ar)]
+                    boxes += [center_x, center_y, s_min / math.sqrt(ar), s_min * math.sqrt(ar)]
 
         anchors = torch.tensor(boxes, dtype=torch.float32)
         anchors = torch.reshape(anchors, shape=(-1, 4)).clamp_(min=0, max=1)   # shape: (8732, 4(cx, cy, w, h))

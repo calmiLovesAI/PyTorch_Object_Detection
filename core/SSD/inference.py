@@ -90,11 +90,11 @@ class Decode:
         inds = torch.nonzero(scores_all > self.conf_thresh).squeeze(1)
         boxes_all, scores_all, labels_all = boxes_all[inds, :], scores_all[inds], labels_all[inds]
 
-        # # 移除面积很小的边界框
-        # w, h = boxes_all[:, 2] - boxes_all[:, 0], boxes_all[:, 3] - boxes_all[:, 1]
-        # keep = (w >= 1 / 300) & (h >= 1 / 300)
-        # keep = keep.nonzero().squeeze(1)
-        # boxes_all, scores_all, labels_all = boxes_all[keep], scores_all[keep], labels_all[keep]
+        # 移除面积很小的边界框
+        w, h = boxes_all[:, 2] - boxes_all[:, 0], boxes_all[:, 3] - boxes_all[:, 1]
+        keep = (w >= 1 / 300) & (h >= 1 / 300)
+        keep = keep.nonzero().squeeze(1)
+        boxes_all, scores_all, labels_all = boxes_all[keep], scores_all[keep], labels_all[keep]
 
         boxes_all, scores_all, labels_all = boxes_all.to(torch.float32), scores_all.to(
             torch.float32), labels_all.to(torch.int32)

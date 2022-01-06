@@ -56,7 +56,7 @@ class MultiBoxLoss:
         # 排序，得到一个索引，它的值表示这个位置的元素第几大
         _, con_idx = con_neg.sort(1, descending=True)
         _, con_rank = con_idx.sort(1)
-        neg_num = torch.clamp(3 * pos_num, max=mask.size(1)).unsqueeze(1)  # (batch_size, 1)
+        neg_num = torch.clamp(self.negpos_ratio * pos_num, max=mask.size(1)).unsqueeze(1)  # (batch_size, 1)
         neg_mask = con_rank < neg_num  # (batch_size, 8732)
 
         # 分类损失

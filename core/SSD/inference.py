@@ -110,6 +110,4 @@ class Decode:
         boxes = reverse_letter_box(h=self.original_image_size[0], w=self.original_image_size[1],
                                    input_size=self.input_image_size, boxes=boxes_out, xywh=False)
 
-        scores = scores_out
-        labels = labels_out - 1
-        return boxes, scores, labels
+        return boxes, scores_out, labels_out - 1

@@ -1,7 +1,6 @@
 # SkeNetch
-SkeNetch，即Sketch Network，是一个基于PyTorch的深度学习工具。 SkeNetch 实现了一些深度学习算法，帮助用户快速训练、测试和部署网络模型。<br>
-SkeNetch, which means Sketch Network, is a deep learning tool based on PyTorch.
-SkeNetch implements some deep learning algorithms to help users quickly train, test, and deploy network models.
+SkeNetch，即Sketch Network，是一个基于PyTorch的深度学习工具，专注于目标检测领域。<br>
+SkeNetch, which means Sketch Network, is a deep learning tool based on PyTorch. SkeNetch focuses on the object detection.
 # Algorithms that have been implemented.
 | Algorithm | Pretrained models | Paper                             |
 |-----------|-------------------|-----------------------------------|

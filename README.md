@@ -28,12 +28,15 @@ pip install -r requirements.txt
     |       |   |-- ... 
     |       `-- val2017
     |           |-- ... 
-    |-- VOCdevkit
-    `-- |-- Annotations
-        |-- ImageSets
-        |-- JPEGImages
-        |-- SegmentationClass
-        |-- SegmentationObject
+    `-- VOCdevkit
+        |
+        `-- VOC2012
+            |
+            `-- |-- Annotations
+                |-- ImageSets
+                |-- JPEGImages
+                |-- SegmentationClass
+                `-- SegmentationObject
 ```
 5. Modify the configuration file under the `experiments` folder according to your needs.
 6. Change the `CONFIG` parameter in `launcher.py`, and then run `launcher.py` to start training or detect multiple pictures at once.

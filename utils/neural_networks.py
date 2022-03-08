@@ -35,9 +35,12 @@ class DeformableConv2d(nn.Module):
                               stride=kernel_size, bias=bias)
 
     def forward(self, x):
-        offset = self.p_conv(x)
+        """
+        x : torch.Tensor, shape: (B, C, H, W)
+        """
+        offset = self.p_conv(x)  # (B, 2k^2, H, W)
         if self.modulation:
-            m = torch.sigmoid(self.m_conv(x))
+            m = torch.sigmoid(self.m_conv(x))  # (B, k^2, H, W)
 
         data_type = offset.data.type()
         N = self.k * self.k
@@ -88,7 +91,7 @@ class DeformableConv2d(nn.Module):
             m = torch.cat([m for _ in range(x_offset.size(1))], dim=1)
             x_offset *= m
 
-        x_offset = self._reshape_x_offset(x_offset, self.k)
+        x_offset = self._reshape_x_offset(x_offset, self.k)   # (b, c, h * k, w * k)
         out = self.conv(x_offset)
 
         return out
